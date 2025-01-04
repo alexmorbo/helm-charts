@@ -47,10 +47,10 @@ spec:
               containerPort: 8080
               protocol: TCP
             - name: torrent-tcp
-              containerPort: 50413
+              containerPort: {{ .Values.qbittorrent.service.torrent.port }}
               protocol: TCP
             - name: torrent-udp
-              containerPort: 50413
+              containerPort: {{ .Values.qbittorrent.service.torrent.port }}
               protocol: UDP
           resources:
             {{- toYaml .Values.qbittorrent.resources | nindent 12 }}
