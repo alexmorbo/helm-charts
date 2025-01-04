@@ -1,0 +1,80 @@
+{{- if .Values.qbittorrent.metrics.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "qbittorrent.fullname" . }}-exporter
+  labels:
+    {{- include "qbittorrent.labels" . | nindent 4 }}
+    app.kubernetes.io/component: exporter
+spec:
+  replicas: 1
+  strategy:
+    type: {{ .Values.qbittorrent.metrics.updateStrategy.type | default "Recreate" }}
+  selector:
+    matchLabels:
+      {{- include "qbittorrent.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: exporter
+  template:
+    metadata:
+      {{- with .Values.qbittorrent.metrics.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "qbittorrent.labels" . | nindent 8 }}
+        app.kubernetes.io/component: exporter
+        {{- with .Values.qbittorrent.metrics.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.qbittorrent.metrics.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "qbittorrent.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.qbittorrent.metrics.podSecurityContext | nindent 8 }}
+      containers:
+        - name: exporter
+          securityContext:
+            {{- toYaml .Values.qbittorrent.metrics.securityContext | nindent 12 }}
+          image: "{{ .Values.qbittorrent.metrics.image.registry }}/{{ .Values.qbittorrent.metrics.image.repository }}:{{ .Values.qbittorrent.metrics.image.tag }}"
+          imagePullPolicy: {{ .Values.qbittorrent.metrics.image.pullPolicy }}
+          ports:
+            - name: metrics
+              containerPort: {{ .Values.qbittorrent.metrics.service.port }}
+              protocol: TCP
+          env:
+            - name: QBITTORRENT_HOST
+              value: "{{ include "qbittorrent.fullname" . }}-web"
+            - name: QBITTORRENT_PORT
+              value: "{{ .Values.qbittorrent.service.web.port }}"
+            - name: EXPORTER_PORT
+              value: "{{ .Values.qbittorrent.metrics.service.port }}"
+          resources:
+            {{- toYaml .Values.qbittorrent.metrics.resources | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: "/"
+              port: {{ .Values.qbittorrent.metrics.service.port }}
+              scheme: HTTP
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            tcpSocket:
+              port: {{ .Values.qbittorrent.metrics.service.port }}
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+      {{- with .Values.qbittorrent.metrics.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.qbittorrent.metrics.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.qbittorrent.metrics.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

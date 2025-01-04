@@ -4,15 +4,17 @@ metadata:
   name: {{ include "qbittorrent.fullname" . }}
   labels:
     {{- include "qbittorrent.labels" . | nindent 4 }}
+    app.kubernetes.io/component: qbittorrent
 spec:
   {{- if not .Values.qbittorrent.autoscaling.enabled }}
   replicas: {{ .Values.qbittorrent.replicaCount }}
   {{- end }}
   strategy:
-    type: {{ .Values.qbittorrent.strategy.type }}
+    type: {{ .Values.qbittorrent.updateStrategy.type }}
   selector:
     matchLabels:
       {{- include "qbittorrent.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: qbittorrent
   template:
     metadata:
       {{- with .Values.qbittorrent.podAnnotations }}
@@ -21,6 +23,7 @@ spec:
       {{- end }}
       labels:
         {{- include "qbittorrent.labels" . | nindent 8 }}
+        app.kubernetes.io/component: qbittorrent
         {{- with .Values.qbittorrent.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}

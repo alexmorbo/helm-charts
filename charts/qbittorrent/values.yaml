@@ -14,7 +14,7 @@ qbittorrent:
   fullnameOverride: ""
 
   # -- Deployment strategy
-  strategy:
+  updateStrategy:
     type: Recreate
 
   # -- Environment variables to add to the qbittorrent pods
@@ -155,6 +155,68 @@ qbittorrent:
     resources:
       limits:
         squat.ai/tun: 1
+
+  metrics:
+    enabled: false
+    image:
+      registry: ghcr.io
+      repository: esanchezm/prometheus-qbittorrent-exporter
+      pullPolicy: IfNotPresent
+      tag: ""
+      sha: ""
+
+    imagePullSecrets: []
+
+    updateStrategy:
+      type: Recreate
+
+    podAnnotations: {}
+    podLabels: {}
+
+    podSecurityContext:
+      fsGroup: 65534
+      fsGroupChangePolicy: OnRootMismatch
+
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - ALL
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      privileged: false
+      runAsUser: 65534
+      runAsGroup: 65534
+      seccompProfile:
+        type: RuntimeDefault
+
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 50m
+        memory: 64Mi
+
+    service:
+      port: 8000
+
+    nodeSelector: { }
+
+    tolerations: [ ]
+
+    affinity: { }
+
+    serviceMonitor:
+      enabled: false
+      # -- If set create the `ServiceMonitor` in an alternate namespace.
+      namespace: ""
+      labels: {}
+      interval: 30s
+      scheme: http
+      tlsConfig: {}
+      scrapeTimeout: 30s
+      relabelings: []
 
 # -- Generic device plugin
 # -- https://github.com/squat/generic-device-plugin

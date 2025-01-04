@@ -4,6 +4,7 @@ metadata:
   name: {{ include "qbittorrent.fullname" . }}-torrent
   labels:
     {{- include "qbittorrent.labels" . | nindent 4 }}
+    app.kubernetes.io/component: qbittorrent
   {{- with .Values.qbittorrent.service.torrent.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -21,4 +22,5 @@ spec:
       name: qbt-torrent-udp
   selector:
     {{- include "qbittorrent.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: qbittorrent
   ipFamilyPolicy: PreferDualStack
