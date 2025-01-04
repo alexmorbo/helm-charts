@@ -12,13 +12,13 @@ spec:
   type: {{ .Values.qbittorrent.service.torrent.type }}
   ports:
     - port: {{ .Values.qbittorrent.service.torrent.port }}
-      targetPort: torrent-tcp
+      targetPort: qbt-torrent-tcp
       protocol: TCP
-      name: torrent-tcp
+      name: qbt-torrent-tcp
     - port: {{ .Values.qbittorrent.service.torrent.port }}
-      targetPort: torrent-udp
+      targetPort: qbt-torrent-udp
       protocol: UDP
-      name: torrent-udp
+      name: qbt-torrent-udp
   selector:
     {{- include "qbittorrent.selectorLabels" . | nindent 4 }}
   ipFamilyPolicy: PreferDualStack

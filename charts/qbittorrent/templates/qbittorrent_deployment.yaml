@@ -47,13 +47,13 @@ spec:
           {{- end }}
           imagePullPolicy: {{ .Values.qbittorrent.image.pullPolicy }}
           ports:
-            - name: http
+            - name: qbt-http
               containerPort: {{ .Values.qbittorrent.service.web.port }}
               protocol: TCP
-            - name: torrent-tcp
+            - name: qbt-torrent-tcp
               containerPort: {{ .Values.qbittorrent.service.torrent.port }}
               protocol: TCP
-            - name: torrent-udp
+            - name: qbt-torrent-udp
               containerPort: {{ .Values.qbittorrent.service.torrent.port }}
               protocol: UDP
           resources:
