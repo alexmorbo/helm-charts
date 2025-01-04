@@ -15,7 +15,7 @@ spec:
     matchNames:
       - {{ .Release.Namespace }}
   endpoints:
-    - port: metrics
+    - port: qbittorrent-exporter
       interval: {{ .Values.qbittorrent.metrics.serviceMonitor.interval | default "30s" }}
       scrapeTimeout: {{ .Values.qbittorrent.metrics.serviceMonitor.scrapeTimeout | default "10s" }}
       scheme: {{ .Values.qbittorrent.metrics.serviceMonitor.scheme | default "http" }}
