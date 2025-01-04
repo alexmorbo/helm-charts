@@ -48,7 +48,7 @@ spec:
           imagePullPolicy: {{ .Values.qbittorrent.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: 8080
+              containerPort: {{ .Values.qbittorrent.service.web.port }}
               protocol: TCP
             - name: torrent-tcp
               containerPort: {{ .Values.qbittorrent.service.torrent.port }}
