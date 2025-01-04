@@ -178,6 +178,12 @@ genericDevicePlugin:
   updateStrategy:
     type: RollingUpdate
 
+  ## Additional InitContainers to initialize the pod
+  ##
+  extraInitContainers: []
+  ## Additional containers to add to the stateful set. This will allow to setup sidecarContainers
+  ##
+  extraContainers: []
   # -- Environment variables to add to the qbittorrent pods
   extraEnv: []
   # -- Environment variables from secrets or configmaps to add to the qbittorrent pods

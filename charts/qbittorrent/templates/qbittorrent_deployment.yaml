@@ -32,6 +32,10 @@ spec:
       serviceAccountName: {{ include "qbittorrent.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.qbittorrent.podSecurityContext | nindent 8 }}
+      {{- with .Values.qbittorrent.extraInitContainers }}
+      initContainers:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -121,6 +125,9 @@ spec:
           volumeMounts:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+        {{- end }}
+        {{- with .Values.qbittorrent.extraContainers }}
+        {{- toYaml . | nindent 8 }}
         {{- end }}
       {{- if or .Values.qbittorrent.config.persistence.enabled .Values.qbittorrent.volumes }}
       volumes:
