@@ -1,0 +1,41 @@
+{{- if .Values.qbittorrent.ingress.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "qbittorrent.fullname" . }}
+  labels:
+    {{- include "qbittorrent.labels" . | nindent 4 }}
+  {{- with .Values.qbittorrent.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.qbittorrent.ingress.ingressClassName }}
+  ingressClassName: {{ .Values.qbittorrent.ingress.ingressClassName }}
+  {{- end }}
+  {{- if .Values.qbittorrent.ingress.tls }}
+  tls:
+    {{- range .Values.qbittorrent.ingress.tls }}
+    - hosts:
+        {{- range .hosts }}
+        - {{ . | quote }}
+        {{- end }}
+      secretName: {{ .secretName }}
+    {{- end }}
+  {{- end }}
+  rules:
+    {{- range .Values.qbittorrent.ingress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType }}
+            backend:
+              service:
+                name: {{ include "qbittorrent.fullname" $ }}-web
+                port:
+                  number: {{ $.Values.qbittorrent.service.web.port }}
+          {{- end }}
+    {{- end }}
+{{- end }}

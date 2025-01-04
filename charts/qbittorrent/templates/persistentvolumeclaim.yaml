@@ -1,0 +1,22 @@
+{{- if .Values.qbittorrent.config.persistence.enabled -}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "qbittorrent.configPersistenceName" . }}
+  labels:
+    {{- include "qbittorrent.labels" . | nindent 4 }}
+spec:
+  {{- with .Values.qbittorrent.config.persistence.accessModes }}
+  accessModes:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- if .Values.qbittorrent.config.persistence.volumeName }}
+  volumeName: {{ .Values.qbittorrent.config.persistence.volumeName }}
+  {{- end }}
+  {{- with .Values.qbittorrent.config.persistence.storageClass }}
+  storageClassName: {{ if (eq "-" .) }}""{{ else }}{{ . }}{{ end }}
+  {{- end }}
+  resources:
+    requests:
+      storage: "{{ .Values.qbittorrent.config.persistence.size }}"
+{{- end }}
