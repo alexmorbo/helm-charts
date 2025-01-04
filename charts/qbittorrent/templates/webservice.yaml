@@ -14,7 +14,7 @@ spec:
     - port: {{ .Values.qbittorrent.service.web.port }}
       targetPort: qbt-http
       protocol: TCP
-      name: qbt-http
+      name: http
   selector:
     {{- include "qbittorrent.selectorLabels" . | nindent 4 }}
   ipFamilyPolicy: PreferDualStack
