@@ -17,4 +17,6 @@ spec:
       name: http
   selector:
     {{- include "qbittorrent.selectorLabels" . | nindent 4 }}
-  ipFamilyPolicy: PreferDualStack
+  ipFamilyPolicy: SingleStack
+  ipFamilies:
+    - IPv4
