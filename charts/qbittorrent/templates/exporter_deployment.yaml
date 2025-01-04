@@ -54,17 +54,9 @@ spec:
           resources:
             {{- toYaml .Values.qbittorrent.metrics.resources | nindent 12 }}
           livenessProbe:
-            httpGet:
-              path: "/"
-              port: {{ .Values.qbittorrent.metrics.service.port }}
-              scheme: HTTP
-            initialDelaySeconds: 10
-            timeoutSeconds: 5
+            {{- toYaml .Values.qbittorrent.metrics.livenessProbe | nindent 12 }}
           readinessProbe:
-            tcpSocket:
-              port: {{ .Values.qbittorrent.metrics.service.port }}
-            initialDelaySeconds: 10
-            timeoutSeconds: 5
+            {{- toYaml .Values.qbittorrent.metrics.readinessProbe | nindent 12 }}
       {{- with .Values.qbittorrent.metrics.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
