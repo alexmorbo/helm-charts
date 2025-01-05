@@ -1,0 +1,91 @@
+{{- if .Values.manage.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "qbittorrent.fullname" . }}-manage
+  labels:
+    {{- include "qbittorrent.labels" . | nindent 4 }}
+    app.kubernetes.io/component: manage
+spec:
+  replicas: 1
+  strategy:
+    type: {{ .Values.manage.updateStrategy.type | default "Recreate" }}
+  selector:
+    matchLabels:
+      {{- include "qbittorrent.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: manage
+  template:
+    metadata:
+      annotations:
+      {{- with .Values.manage.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+        configHash: "{{ .Values.manage.config | toYaml | sha256sum }}"
+      labels:
+        {{- include "qbittorrent.labels" . | nindent 8 }}
+        app.kubernetes.io/component: manage
+        {{- with .Values.manage.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.manage.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "qbittorrent.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.manage.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: init-config
+          image: alpine
+          command: [ "/bin/ash", "-c" ]
+          args:
+            - |
+              cp /tmp/config.yml /config/config.yml
+              chown nobody:nobody /config/config.yml
+          volumeMounts:
+            - name: config-map
+              mountPath: /tmp
+            - name: config
+              mountPath: /config
+      containers:
+        - name: manage
+          securityContext:
+            {{- toYaml .Values.manage.securityContext | nindent 12 }}
+          image: "{{ .Values.manage.image.registry }}/{{ .Values.manage.image.repository }}:{{ .Values.manage.image.tag }}"
+          imagePullPolicy: {{ .Values.manage.image.pullPolicy }}
+          {{- with .Values.manage.env }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.manage.resources | nindent 12 }}
+          volumeMounts:
+            - name: config
+              mountPath: /config
+          {{- with .Values.qbittorrent.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: config-map
+          configMap:
+            name: {{ include "manage.configMapName" . }}
+        - name: config
+          persistentVolumeClaim:
+            claimName: {{ include "manage.configPersistenceName" . }}
+      {{- with .Values.qbittorrent.volumes }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.manage.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.manage.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.manage.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

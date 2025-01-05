@@ -6,9 +6,7 @@ metadata:
     {{- include "qbittorrent.labels" . | nindent 4 }}
     app.kubernetes.io/component: qbittorrent
 spec:
-  {{- if not .Values.qbittorrent.autoscaling.enabled }}
   replicas: {{ .Values.qbittorrent.replicaCount }}
-  {{- end }}
   strategy:
     type: {{ .Values.qbittorrent.updateStrategy.type }}
   selector:

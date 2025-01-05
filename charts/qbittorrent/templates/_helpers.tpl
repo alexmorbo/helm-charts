@@ -132,3 +132,18 @@ Create the name of the service account to use
 {{- default "default" .Values.genericDevicePlugin.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+
+{{/*
+Create the name of the configmap to use
+*/}}
+{{- define "manage.configMapName" -}}
+{{- default (printf "%s-manage-config" (include "qbittorrent.fullname" .)) .Values.qbittorrent.config.persistence.name }}
+{{- end }}
+
+{{/*
+Create the name of the pvc config to use
+*/}}
+{{- define "manage.configPersistenceName" -}}
+{{- default (printf "%s-manage-config" (include "qbittorrent.fullname" .)) .Values.qbittorrent.config.persistence.name }}
+{{- end }}

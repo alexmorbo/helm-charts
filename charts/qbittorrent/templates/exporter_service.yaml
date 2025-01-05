@@ -11,7 +11,7 @@ spec:
   ports:
     - name: metrics
       port: {{ .Values.qbittorrent.metrics.service.port }}
-      targetPort: http
+      targetPort: metrics
       protocol: TCP
   selector:
     {{- include "qbittorrent.selectorLabels" . | nindent 4 }}

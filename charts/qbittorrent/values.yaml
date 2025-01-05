@@ -110,13 +110,6 @@ qbittorrent:
     #   cpu: 100m
   #   memory: 128Mi
 
-  autoscaling:
-    enabled: false
-    minReplicas: 1
-    maxReplicas: 100
-    targetCPUUtilizationPercentage: 80
-    # targetMemoryUtilizationPercentage: 80
-
   # -- Additional volumes on the output Deployment definition.
   volumes: []
   # - name: foo
@@ -162,7 +155,7 @@ qbittorrent:
       registry: ghcr.io
       repository: esanchezm/prometheus-qbittorrent-exporter
       pullPolicy: IfNotPresent
-      tag: ""
+      tag: "latest"
       sha: ""
 
     imagePullSecrets: []
@@ -239,6 +232,75 @@ qbittorrent:
       tlsConfig: {}
       scrapeTimeout: 30s
       relabelings: []
+
+manage:
+  enabled: false
+
+  image:
+    registry: ghcr.io
+    repository: stuffanthings/qbit_manage
+    pullPolicy: IfNotPresent
+    tag: "latest"
+    sha: ""
+
+  imagePullSecrets: [ ]
+
+  updateStrategy:
+    type: Recreate
+
+  podAnnotations: { }
+  podLabels: { }
+
+  podSecurityContext:
+    fsGroup: 65534
+    fsGroupChangePolicy: OnRootMismatch
+
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    privileged: false
+    runAsUser: 65534
+    runAsGroup: 65534
+    seccompProfile:
+      type: RuntimeDefault
+
+  persistence:
+    enabled: true
+    # -- Size of persistent disk
+    size: 5Gi
+    # -- Annotations for PVCs
+    annotations: {}
+    # -- Access modes of persistent disk
+    accessModes:
+      - ReadWriteOnce
+    # -- Config name
+    name: ""
+    # -- Name of the permanent volume to reference in the claim.
+    # Can be used to bind to existing volumes.
+    volumeName: ""
+
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+
+  nodeSelector: { }
+
+  tolerations: [ ]
+
+  affinity: { }
+
+  env: [ ]
+
+  config: { }
+
 
 # -- Generic device plugin
 # -- https://github.com/squat/generic-device-plugin
