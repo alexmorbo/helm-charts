@@ -29,18 +29,26 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "qbittorrent.serviceAccountName" . }}
+      {{- with .Values.qbittorrent.metrics.podSecurityContext }}
       securityContext:
-        {{- toYaml .Values.qbittorrent.metrics.podSecurityContext | nindent 8 }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: exporter
-          securityContext:
-            {{- toYaml .Values.qbittorrent.metrics.securityContext | nindent 12 }}
+          {{- if .Values.qbittorrent.metrics.image.sha }}
+          image: "{{ .Values.qbittorrent.metrics.image.registry }}/{{ .Values.qbittorrent.metrics.image.repository }}:{{ .Values.qbittorrent.metrics.image.tag }}@sha256:{{ .Values.qbittorrent.metrics.image.sha }}"
+          {{- else }}
           image: "{{ .Values.qbittorrent.metrics.image.registry }}/{{ .Values.qbittorrent.metrics.image.repository }}:{{ .Values.qbittorrent.metrics.image.tag }}"
+          {{- end }}
           imagePullPolicy: {{ .Values.qbittorrent.metrics.image.pullPolicy }}
           ports:
             - name: metrics
               containerPort: {{ .Values.qbittorrent.metrics.service.port }}
               protocol: TCP
+          {{- with .Values.qbittorrent.metrics.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           env:
             - name: QBITTORRENT_HOST
               value: "{{ include "qbittorrent.fullname" . }}-web"
@@ -48,12 +56,18 @@ spec:
               value: "{{ .Values.qbittorrent.service.web.port }}"
             - name: EXPORTER_PORT
               value: "{{ .Values.qbittorrent.metrics.service.port }}"
+          {{- with .Values.qbittorrent.metrics.resources }}
           resources:
-            {{- toYaml .Values.qbittorrent.metrics.resources | nindent 12 }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.qbittorrent.metrics.livenessProbe }}
           livenessProbe:
-            {{- toYaml .Values.qbittorrent.metrics.livenessProbe | nindent 12 }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.qbittorrent.metrics.readinessProbe }}
           readinessProbe:
-            {{- toYaml .Values.qbittorrent.metrics.readinessProbe | nindent 12 }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
       {{- with .Values.qbittorrent.metrics.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
