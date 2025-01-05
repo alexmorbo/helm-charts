@@ -3,7 +3,7 @@ kubeVersion: ">=1.23.0-0"
 name: qbittorrent
 description: qbittorrent helm chart for Kubernetes
 type: application
-version: 1.0.13
+version: 1.0.14
 appVersion: "4.6.6"
 maintainers:
   - name: AlexMorbo
@@ -11,6 +11,6 @@ maintainers:
   - name: Ludovic Ortega
     email: ludovic.ortega@adminafk.fr
 sources:
-  - https://github.com/alexmorbo/helm-charts/tree/main/charts/qbittorrent
+  - https://github.com/alexmorbo/helm-charts/tree/master/charts/qbittorrent
   - https://github.com/M0NsTeRRR/helm-charts
 home: https://github.com/qbittorrent/qBittorrent

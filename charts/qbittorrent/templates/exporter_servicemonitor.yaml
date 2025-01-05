@@ -8,17 +8,14 @@ metadata:
 spec:
   selector:
     matchLabels:
-      {{- include "qbittorrent.selectorLabels" (dict "component" "exporter" "Chart" .Chart "Release" .Release "Values" .Values) | nindent 4 }}
-  namespaceSelector:
-    matchNames:
-      - {{ .Release.Namespace }}
+      {{- include "qbittorrent.selectorLabels" (dict "component" "exporter" "Chart" .Chart "Release" .Release "Values" .Values) | nindent 6 }}
   endpoints:
     - port: metrics
-      interval: {{ .Values.qbittorrent.metrics.serviceMonitor.interval | default "30s" }}
-      scrapeTimeout: {{ .Values.qbittorrent.metrics.serviceMonitor.scrapeTimeout | default "10s" }}
-      scheme: {{ .Values.qbittorrent.metrics.serviceMonitor.scheme | default "http" }}
-      tlsConfig:
-        {{- toYaml .Values.qbittorrent.metrics.serviceMonitor.tlsConfig | nindent 8 }}
-      relabelings:
-        {{- toYaml .Values.qbittorrent.metrics.serviceMonitor.relabelings | nindent 8 }}
+      path: /
+      {{- with .Values.qbittorrent.metrics.serviceMonitor.interval | default "30s" }}
+      interval: {{ . }}
+      {{- end }}
+      {{- with .Values.qbittorrent.metrics.serviceMonitor.scrapeTimeout | default "10s" }}
+      scrapeTimeout: {{ . }}
+      {{- end }}
 {{- end }}
