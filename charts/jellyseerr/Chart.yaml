@@ -11,5 +11,6 @@ maintainers:
   - name: Jellyseerr
     url: https://github.com/Fallenbagel/jellyseerr
 sources:
+  - https://github.com/alexmorbo/helm-charts/tree/master/charts/jellyseerr
   - https://github.com/Fallenbagel/jellyseerr/tree/main/charts/jellyseerr
 home: https://github.com/Fallenbagel/jellyseerr
