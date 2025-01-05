@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "lldap.fullname" . }}
+  labels:
+    {{- include "lldap.labels" . | nindent 4 }}
+  {{- with .Values.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "lldap.labels" . | nindent 6 }}
+  strategy:
+    type: {{ .Values.updateStrategy.type }}
+  template:
+    metadata:
+      labels:
+        {{- include "lldap.labels" . | nindent 8 }}
+      {{- with .Values.annotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "lldap.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- with .Values.extraInitContainers }}
+      initContainers:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          {{- if .Values.image.sha }}
+          image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}@sha256:{{ .Values.image.sha }}"
+          {{- else }}
+          image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          {{- end }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          env:
+            - name: TZ
+              value: "{{ .Values.env.TZ }}"
+            - name: UID
+              value: "{{ .Values.env.UID }}"
+            - name: GID
+              value: "{{ .Values.env.GID }}"
+            - name: LLDAP_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "lldap.secretName" . }}
+                  key: lldap-jwt-secret
+            - name: LLDAP_LDAP_BASE_DN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "lldap.secretName" . }}
+                  key: base-dn
+            - name: LLDAP_LDAP_USER_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "lldap.secretName" . }}
+                  key: lldap-ldap-user-pass
+          {{- with .Values.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.extraEnvFrom }}
+          envFrom:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.http_port }}
+              protocol: TCP
+            - name: ldap
+              containerPort: {{ .Values.service.ldap_port }}
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /data
+              name: lldap-data
+      volumes:
+        - name: lldap-data
+          persistentVolumeClaim:
+            claimName: {{ include "lldap.persistenceName" . }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 6 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 6 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 6 }}
+      {{- end }}

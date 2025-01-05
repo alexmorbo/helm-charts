@@ -1,0 +1,118 @@
+replicaCount: 1
+
+image:
+  registry: ghcr.io
+  repository: lldap/lldap
+  pullPolicy: IfNotPresent
+  # -- Overrides the image tag whose default is the chart appVersion.
+  tag: "v0.6.1-alpine"
+  sha: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+annotations: {}
+
+# -- Deployment strategy
+updateStrategy:
+  type: Recreate
+
+# -- Environment variables to add to the lldap pods
+extraEnv: []
+# -- Environment variables from secrets or configmaps to add to the lldap pods
+extraEnvFrom: []
+
+extraInitContainers: []
+
+serviceAccount:
+  # -- Specifies whether a service account should be created
+  create: true
+  # -- Automatically mount a ServiceAccount's API credentials?
+  automount: true
+  # -- Annotations to add to the service account
+  annotations: {}
+  # -- The name of the service account to use.
+  # -- If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+secret:
+  create: true
+  annotations: {}
+  lldapJwtSecret: "wobY6RK/Dc0vL21zFiIZs9iyVy0NQ3ldijYPQ4HLWTc="
+  # default user is admin
+  lldapUserPass: "admiistrator123456"
+  lldapBaseDn: "dc=homelab,dc=local"
+
+persistence:
+  # -- Size of persistent disk
+  size: 100Mi
+  # -- Annotations for PVCs
+  annotations: {}
+  # -- Access modes of persistent disk
+  accessModes:
+    - ReadWriteOnce
+  # -- Name of the permanent volume to reference in the claim.
+  # Can be used to bind to existing volumes.
+  volumeName: ""
+  storageClass: ""
+
+env:  
+  TZ: "UTC"
+  GID: "1001"
+  UID: "1001"
+
+resources: {}
+#  limits:
+#    cpu: 100m
+#    memory: 100Mi
+#  requests:
+#    cpu: 50m
+#    memory: 50M
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+podSecurityContext:
+  fsGroup: 65534
+  fsGroupChangePolicy: OnRootMismatch
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  privileged: false
+  runAsUser: 65534
+  runAsGroup: 65534
+  seccompProfile:
+    type: RuntimeDefault
+
+service:
+  type: ClusterIP
+  annotations: {}
+  ldap_port: 3890
+  http_port: 17170
+
+ingress:
+  enabled: false
+  ingressClassName: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+
