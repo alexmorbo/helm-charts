@@ -4,13 +4,11 @@ kind: ServiceMonitor
 metadata:
   name: {{ include "qbittorrent.fullname" . }}-exporter
   labels:
-    {{- include "qbittorrent.labels" . | nindent 4 }}
-    app.kubernetes.io/component: exporter
+    {{- include "qbittorrent.labels" (dict "component" "exporter" "Chart" .Chart "Release" .Release "Values" .Values) | nindent 4 }}
 spec:
   selector:
     matchLabels:
-      {{- include "qbittorrent.selectorLabels" . | nindent 6 }}
-      app.kubernetes.io/component: exporter
+      {{- include "qbittorrent.selectorLabels" (dict "component" "exporter" "Chart" .Chart "Release" .Release "Values" .Values) | nindent 4 }}
   namespaceSelector:
     matchNames:
       - {{ .Release.Namespace }}

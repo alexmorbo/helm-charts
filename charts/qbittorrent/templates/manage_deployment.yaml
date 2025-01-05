@@ -4,16 +4,14 @@ kind: Deployment
 metadata:
   name: {{ include "qbittorrent.fullname" . }}-manage
   labels:
-    {{- include "qbittorrent.labels" . | nindent 4 }}
-    app.kubernetes.io/component: manage
+    {{- include "qbittorrent.labels" (dict "component" "manage" "Chart" .Chart "Release" .Release "Values" .Values) | nindent 4 }}
 spec:
   replicas: 1
   strategy:
     type: {{ .Values.manage.updateStrategy.type | default "Recreate" }}
   selector:
     matchLabels:
-      {{- include "qbittorrent.selectorLabels" . | nindent 6 }}
-      app.kubernetes.io/component: manage
+      {{- include "qbittorrent.selectorLabels" (dict "component" "manage" "Chart" .Chart "Release" .Release "Values" .Values) | nindent 6 }}
   template:
     metadata:
       annotations:
@@ -22,8 +20,7 @@ spec:
       {{- end }}
         configHash: "{{ .Values.manage.config | toYaml | sha256sum }}"
       labels:
-        {{- include "qbittorrent.labels" . | nindent 8 }}
-        app.kubernetes.io/component: manage
+        {{- include "qbittorrent.labels" (dict "component" "manage" "Chart" .Chart "Release" .Release "Values" .Values) | nindent 8 }}
         {{- with .Values.manage.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -33,8 +30,10 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "qbittorrent.serviceAccountName" . }}
+      {{- with .Values.manage.podSecurityContext }}
       securityContext:
-        {{- toYaml .Values.manage.podSecurityContext | nindent 8 }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       initContainers:
         - name: init-config
           image: alpine
@@ -50,16 +49,24 @@ spec:
               mountPath: /config
       containers:
         - name: manage
-          securityContext:
-            {{- toYaml .Values.manage.securityContext | nindent 12 }}
+          {{- if .Values.manage.image.sha }}
+          image: "{{ .Values.manage.image.registry }}/{{ .Values.manage.image.repository }}:{{ .Values.manage.image.tag }}@sha256:{{ .Values.manage.image.sha }}"
+          {{- else }}
           image: "{{ .Values.manage.image.registry }}/{{ .Values.manage.image.repository }}:{{ .Values.manage.image.tag }}"
+          {{- end }}
           imagePullPolicy: {{ .Values.manage.image.pullPolicy }}
+          {{- with .Values.manage.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- with .Values.manage.env }}
           env:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          {{- with .Values.manage.resources }}
           resources:
-            {{- toYaml .Values.manage.resources | nindent 12 }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           volumeMounts:
             - name: config
               mountPath: /config

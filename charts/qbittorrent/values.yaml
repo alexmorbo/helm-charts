@@ -17,6 +17,7 @@ qbittorrent:
   updateStrategy:
     type: Recreate
 
+  extraInitContainers: []
   # -- Environment variables to add to the qbittorrent pods
   extraEnv: []
   # -- Environment variables from secrets or configmaps to add to the qbittorrent pods
@@ -155,7 +156,7 @@ qbittorrent:
       registry: ghcr.io
       repository: esanchezm/prometheus-qbittorrent-exporter
       pullPolicy: IfNotPresent
-      tag: "latest"
+      tag: "v1.6.0"
       sha: ""
 
     imagePullSecrets: []
@@ -240,7 +241,7 @@ manage:
     registry: ghcr.io
     repository: stuffanthings/qbit_manage
     pullPolicy: IfNotPresent
-    tag: "latest"
+    tag: "v4.1.15"
     sha: ""
 
   imagePullSecrets: [ ]

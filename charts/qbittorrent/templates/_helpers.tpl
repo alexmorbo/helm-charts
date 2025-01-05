@@ -34,7 +34,7 @@ Create chart name and version as used by the chart label.
 {{- end }}
 
 {{/*
-Common labels
+Generate common labels, with optional component-specific label
 */}}
 {{- define "qbittorrent.labels" -}}
 helm.sh/chart: {{ include "qbittorrent.chart" . }}
@@ -44,14 +44,20 @@ app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/part-of: {{ .Chart.Name }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- if .component }}
+app.kubernetes.io/component: {{ .component }}
+{{- end }}
 {{- end }}
 
 {{/*
-Selector labels
+Generate selector labels, with optional component-specific label
 */}}
 {{- define "qbittorrent.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "qbittorrent.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
+{{- if .component }}
+app.kubernetes.io/component: {{ .component }}
+{{- end }}
 {{- end }}
 
 {{/*

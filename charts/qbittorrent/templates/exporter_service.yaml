@@ -4,8 +4,7 @@ kind: Service
 metadata:
   name: {{ include "qbittorrent.fullname" . }}-exporter
   labels:
-    {{- include "qbittorrent.labels" . | nindent 4 }}
-    app.kubernetes.io/component: exporter
+    {{- include "qbittorrent.labels" (dict "component" "exporter" "Chart" .Chart "Release" .Release "Values" .Values) | nindent 4 }}
 spec:
   type: ClusterIP
   ports:
@@ -14,6 +13,5 @@ spec:
       targetPort: metrics
       protocol: TCP
   selector:
-    {{- include "qbittorrent.selectorLabels" . | nindent 4 }}
-    app.kubernetes.io/component: exporter
+    {{- include "qbittorrent.selectorLabels" (dict "component" "exporter" "Chart" .Chart "Release" .Release "Values" .Values) | nindent 4 }}
 {{- end }}

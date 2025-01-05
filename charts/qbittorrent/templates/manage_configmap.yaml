@@ -4,8 +4,7 @@ kind: ConfigMap
 metadata:
   name: {{ include "manage.configMapName" . }}
   labels:
-    {{- include "qbittorrent.labels" . | nindent 4 }}
-    app.kubernetes.io/component: manage
+    {{- include "qbittorrent.labels" (dict "component" "manage" "Chart" .Chart "Release" .Release "Values" .Values) | nindent 4 }}
 data:
   config.yml: |
     {{ .Values.manage.config | toYaml | nindent 4 }}

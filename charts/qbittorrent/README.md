@@ -1,6 +1,6 @@
 # qbittorrent
 
-![Version: 1.0.11](https://img.shields.io/badge/Version-1.0.11-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 4.6.6](https://img.shields.io/badge/AppVersion-4.6.6-informational?style=flat-square)
+![Version: 1.0.12](https://img.shields.io/badge/Version-1.0.12-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 4.6.6](https://img.shields.io/badge/AppVersion-4.6.6-informational?style=flat-square)
 
 qbittorrent helm chart for Kubernetes
 
@@ -52,7 +52,7 @@ helm install qbittorrent oci://ghcr.io/alexmorbo/helm-charts/qbittorrent
 | manage.image.registry | string | `"ghcr.io"` |  |
 | manage.image.repository | string | `"stuffanthings/qbit_manage"` |  |
 | manage.image.sha | string | `""` |  |
-| manage.image.tag | string | `"latest"` |  |
+| manage.image.tag | string | `"v4.1.15"` |  |
 | manage.imagePullSecrets | list | `[]` |  |
 | manage.nodeSelector | object | `{}` |  |
 | manage.persistence.accessModes | list | `["ReadWriteOnce"]` | Access modes of persistent disk |
@@ -88,6 +88,7 @@ helm install qbittorrent oci://ghcr.io/alexmorbo/helm-charts/qbittorrent
 | qbittorrent.config.persistence.volumeName | string | `""` | Name of the permanent volume to reference in the claim. Can be used to bind to existing volumes. |
 | qbittorrent.extraEnv | list | `[]` | Environment variables to add to the qbittorrent pods |
 | qbittorrent.extraEnvFrom | list | `[]` | Environment variables from secrets or configmaps to add to the qbittorrent pods |
+| qbittorrent.extraInitContainers | list | `[]` |  |
 | qbittorrent.fullnameOverride | string | `""` |  |
 | qbittorrent.gluetun | object | `{"enabled":true,"extraEnv":[],"extraEnvFrom":[],"image":{"pullPolicy":"IfNotPresent","registry":"docker.io","repository":"qmcgaw/gluetun","sha":"","tag":"v3.40.0"},"resources":{"limits":{"squat.ai/tun":1}},"securityContext":{"capabilities":{"add":["NET_ADMIN"]}},"volumeMounts":[]}` | Gluetun sidecar |
 | qbittorrent.image.pullPolicy | string | `"IfNotPresent"` |  |
@@ -109,7 +110,7 @@ helm install qbittorrent oci://ghcr.io/alexmorbo/helm-charts/qbittorrent
 | qbittorrent.metrics.image.registry | string | `"ghcr.io"` |  |
 | qbittorrent.metrics.image.repository | string | `"esanchezm/prometheus-qbittorrent-exporter"` |  |
 | qbittorrent.metrics.image.sha | string | `""` |  |
-| qbittorrent.metrics.image.tag | string | `"latest"` |  |
+| qbittorrent.metrics.image.tag | string | `"v1.6.0"` |  |
 | qbittorrent.metrics.imagePullSecrets | list | `[]` |  |
 | qbittorrent.metrics.livenessProbe.failureThreshold | int | `4` |  |
 | qbittorrent.metrics.livenessProbe.httpGet.path | string | `"/"` |  |

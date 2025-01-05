@@ -3,8 +3,7 @@ kind: Service
 metadata:
   name: {{ include "qbittorrent.fullname" . }}-web
   labels:
-    {{- include "qbittorrent.labels" . | nindent 4 }}
-    app.kubernetes.io/component: qbittorrent
+    {{- include "qbittorrent.labels" (dict "component" "qbittorrent" "Chart" .Chart "Release" .Release "Values" .Values) | nindent 4 }}
   {{- with .Values.qbittorrent.service.web.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -17,8 +16,5 @@ spec:
       protocol: TCP
       name: http
   selector:
-    {{- include "qbittorrent.selectorLabels" . | nindent 4 }}
-    app.kubernetes.io/component: qbittorrent
-  ipFamilyPolicy: SingleStack
-  ipFamilies:
-    - IPv4
+    {{- include "qbittorrent.selectorLabels" (dict "component" "qbittorrent" "Chart" .Chart "Release" .Release "Values" .Values) | nindent 4 }}
+  ipFamilyPolicy: PreferDualStack

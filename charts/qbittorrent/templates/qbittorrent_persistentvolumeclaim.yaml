@@ -4,7 +4,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: {{ include "qbittorrent.configPersistenceName" . }}
   labels:
-    {{- include "qbittorrent.labels" . | nindent 4 }}
+    {{- include "qbittorrent.labels" (dict "component" "qbittorrent" "Chart" .Chart "Release" .Release "Values" .Values) | nindent 4 }}
 spec:
   {{- with .Values.qbittorrent.config.persistence.accessModes }}
   accessModes:

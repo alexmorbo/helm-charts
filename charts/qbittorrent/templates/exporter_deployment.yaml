@@ -4,16 +4,14 @@ kind: Deployment
 metadata:
   name: {{ include "qbittorrent.fullname" . }}-exporter
   labels:
-    {{- include "qbittorrent.labels" . | nindent 4 }}
-    app.kubernetes.io/component: exporter
+    {{- include "qbittorrent.labels" (dict "component" "exporter" "Chart" .Chart "Release" .Release "Values" .Values) | nindent 4 }}
 spec:
   replicas: 1
   strategy:
     type: {{ .Values.qbittorrent.metrics.updateStrategy.type | default "Recreate" }}
   selector:
     matchLabels:
-      {{- include "qbittorrent.selectorLabels" . | nindent 6 }}
-      app.kubernetes.io/component: exporter
+      {{- include "qbittorrent.selectorLabels" (dict "component" "exporter" "Chart" .Chart "Release" .Release "Values" .Values) | nindent 6 }}
   template:
     metadata:
       {{- with .Values.qbittorrent.metrics.podAnnotations }}
@@ -21,8 +19,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "qbittorrent.labels" . | nindent 8 }}
-        app.kubernetes.io/component: exporter
+        {{- include "qbittorrent.labels" (dict "component" "exporter" "Chart" .Chart "Release" .Release "Values" .Values) | nindent 8 }}
         {{- with .Values.qbittorrent.metrics.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}

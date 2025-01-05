@@ -3,8 +3,7 @@ kind: Service
 metadata:
   name: {{ include "qbittorrent.fullname" . }}-torrent
   labels:
-    {{- include "qbittorrent.labels" . | nindent 4 }}
-    app.kubernetes.io/component: qbittorrent
+    {{- include "qbittorrent.labels" (dict "component" "qbittorrent" "Chart" .Chart "Release" .Release "Values" .Values) | nindent 4 }}
   {{- with .Values.qbittorrent.service.torrent.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -21,6 +20,5 @@ spec:
       protocol: UDP
       name: qbt-torrent-udp
   selector:
-    {{- include "qbittorrent.selectorLabels" . | nindent 4 }}
-    app.kubernetes.io/component: qbittorrent
+    {{- include "qbittorrent.selectorLabels" (dict "component" "qbittorrent" "Chart" .Chart "Release" .Release "Values" .Values) | nindent 4 }}
   ipFamilyPolicy: PreferDualStack
