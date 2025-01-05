@@ -8,8 +8,6 @@ appVersion: "2.2.3"
 maintainers:
   - name: AlexMorbo
     email: alex@morbo.ru
-  - name: Jellyseerr
-    url: https://github.com/Fallenbagel/jellyseerr
 sources:
   - https://github.com/alexmorbo/helm-charts/tree/master/charts/jellyseerr
   - https://github.com/Fallenbagel/jellyseerr/tree/main/charts/jellyseerr

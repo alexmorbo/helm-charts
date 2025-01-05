@@ -8,8 +8,6 @@ appVersion: "4.6.6"
 maintainers:
   - name: AlexMorbo
     email: alex@morbo.ru
-  - name: Ludovic Ortega
-    email: ludovic.ortega@adminafk.fr
 sources:
   - https://github.com/alexmorbo/helm-charts/tree/master/charts/qbittorrent
   - https://github.com/M0NsTeRRR/helm-charts
