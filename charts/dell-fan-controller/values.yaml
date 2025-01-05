@@ -1,0 +1,63 @@
+image:
+  registry: ghcr.io
+  repository: alexmorbo/dell_idrac_fan_controller
+  pullPolicy: IfNotPresent
+  # -- Overrides the image tag whose default is the chart appVersion.
+  tag: "v0.1.6"
+  sha: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+annotations: {}
+
+# -- Deployment strategy
+updateStrategy:
+  type: Recreate
+
+# -- Environment variables to add
+extraEnv: []
+# -- Environment variables from secrets or configmaps to add
+extraEnvFrom: []
+
+server:
+  host: ""
+  username: ""
+  password: ""
+  fan_speed: ""
+  cpu_temperature_threshold: ""
+  check_interval: "30"
+  disable_pcie_cooling: "false"
+  keep_pcie_cooling: "false"
+
+resources: {}
+#  limits:
+#    cpu: 100m
+#    memory: 100Mi
+#  requests:
+#    cpu: 50m
+#    memory: 50M
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+podSecurityContext:
+  fsGroup: 65534
+  fsGroupChangePolicy: OnRootMismatch
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  privileged: false
+  runAsUser: 65534
+  runAsGroup: 65534
+  seccompProfile:
+    type: RuntimeDefault
