@@ -1,0 +1,20 @@
+{{- range $moduleName, $module := .Values.modules }}
+{{- range $index, $target := $module.targets }}
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: ScrapeConfig
+metadata:
+  name: {{ include "prometheus-pve-exporter.name" $}}-{{ $index }}
+  labels:
+    {{- include "prometheus-pve-exporter.labels" $ | nindent 4 }}
+    release: {{ $.Values.prometheus }}
+spec:
+  scrapeInterval: {{ $.Values.scrapeInterval | default "30s" }}
+  metricsPath: /pve
+  params:
+    target: [{{ $target }}]
+    module: [{{ $moduleName }}]
+  staticConfigs:
+    - targets:
+        - {{ include "prometheus-pve-exporter.serviceName" $ }}.{{ $.Release.Namespace }}:{{ include "prometheus-pve-exporter.servicePort" $ }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,84 @@
+image:
+  registry: docker.io
+  repository: prompve/prometheus-pve-exporter
+  pullPolicy: IfNotPresent
+  # -- Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+  sha: ""
+
+prometheus: ""
+scrapeInterval: ""
+modules: {}
+#  default:
+#    token_id: ""
+#    token_secret: ""
+#    targets:
+#      - pve.homelab.local
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+# -- Deployment strategy
+updateStrategy:
+  type: RollingUpdate
+
+# -- Environment variables to add to the prometheus-pve-exporter pods
+extraEnv: []
+# -- Environment variables from secrets or configmaps to add to the prometheus-pve-exporter pods
+extraEnvFrom: []
+
+serviceAccount:
+  # -- Specifies whether a service account should be created
+  create: true
+  # -- Automatically mount a ServiceAccount's API credentials?
+  automount: true
+  # -- Annotations to add to the service account
+  annotations: {}
+  # -- The name of the service account to use.
+  # -- If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  fsGroup: 1000
+  fsGroupChangePolicy: OnRootMismatch
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: false
+  runAsNonRoot: true
+  privileged: false
+  runAsUser: 1000
+  runAsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+
+service:
+  type: ClusterIP
+  port: 9221
+
+livenessProbe:
+#  httpGet:
+#    path: /
+#    port: http
+readinessProbe:
+#  httpGet:
+#    path: /
+#    port: http
+
+prometheusRule:
+  enabled: false
+
+resources: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
