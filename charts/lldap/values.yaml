@@ -57,7 +57,7 @@ persistence:
   volumeName: ""
   storageClass: ""
 
-env:  
+env:
   TZ: "UTC"
   GID: "1001"
   UID: "1001"
@@ -114,5 +114,3 @@ ingress:
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
-
-

@@ -1,13 +1,13 @@
 
 # prometheus-pve-exporter
 
-![Version: 1.0.2](https://img.shields.io/badge/Version-1.0.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.5.0](https://img.shields.io/badge/AppVersion-3.5.0-informational?style=flat-square)
+![Version: 1.0.3](https://img.shields.io/badge/Version-1.0.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.5.0](https://img.shields.io/badge/AppVersion-3.5.0-informational?style=flat-square)
 
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/prometheus-pve-exporter)](https://artifacthub.io/packages/search?repo=prometheus-pve-exporter)
 
-prometheus-pve-exporter helm chart for Kubernetes
+Prometheus pve exporter helm chart for Kubernetes
 
-**Homepage:** <https://github.com/prometheus-pve/prometheus-pve-exporter>
+**Homepage:** <https://github.com/alexmorbo/helm-charts>
 
 ## Maintainers
 

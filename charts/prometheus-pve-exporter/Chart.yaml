@@ -1,9 +1,9 @@
 apiVersion: v2
 kubeVersion: ">=1.23.0-0"
 name: prometheus-pve-exporter
-description: prometheus-pve-exporter helm chart for Kubernetes
+description: Prometheus pve exporter helm chart for Kubernetes
 type: application
-version: 1.0.2
+version: 1.0.3
 appVersion: "3.5.0"
 maintainers:
   - name: AlexMorbo
@@ -11,4 +11,17 @@ maintainers:
 sources:
   - https://github.com/alexmorbo/helm-charts/tree/master/charts/prometheus-pve-exporter
 icon: https://raw.githubusercontent.com/alexmorbo/helm-charts/refs/heads/master/docs/assets/logo.svg
-home: https://github.com/prometheus-pve/prometheus-pve-exporter
+home: https://github.com/alexmorbo/helm-charts
+keywords:
+  - prometheus
+  - proxmox
+  - pve
+  - exporter
+  - monitoring
+  - metrics
+annotations:
+  artifacthub.io/links: |-
+    - name: App Source
+      url: https://github.com/prometheus-pve/prometheus-pve-exporter
+    - name: Chart Source
+      url: https://github.com/alexmorbo/helm-charts/tree/master/charts/prometheus-pve-exporter

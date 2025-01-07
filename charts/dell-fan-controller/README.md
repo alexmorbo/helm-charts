@@ -1,13 +1,13 @@
 
 # dell-fan-controller
 
-![Version: 1.0.2](https://img.shields.io/badge/Version-1.0.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.1.6](https://img.shields.io/badge/AppVersion-0.1.6-informational?style=flat-square)
+![Version: 1.0.3](https://img.shields.io/badge/Version-1.0.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.1.6](https://img.shields.io/badge/AppVersion-0.1.6-informational?style=flat-square)
 
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/dell-fan-controller)](https://artifacthub.io/packages/search?repo=dell-fan-controller)
 
 Dell Fan Controller helm chart for Kubernetes
 
-**Homepage:** <https://github.com/tigerblue77/Dell_iDRAC_fan_controller_Docker>
+**Homepage:** <https://github.com/alexmorbo/helm-charts>
 
 ## Maintainers
 
@@ -18,7 +18,6 @@ Dell Fan Controller helm chart for Kubernetes
 ## Source Code
 
 * <https://github.com/alexmorbo/helm-charts/tree/master/charts/dell-fan-controller>
-* <https://github.com/alexmorbo/Dell_iDRAC_fan_controller_Docker>
 
 ## Requirements
 

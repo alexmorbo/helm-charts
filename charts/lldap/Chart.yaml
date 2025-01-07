@@ -3,13 +3,23 @@ kubeVersion: ">=1.23.0-0"
 name: lldap
 description: LLDAP helm chart for Kubernetes
 type: application
-version: 1.0.2
+version: 1.0.3
 appVersion: "0.6.1"
 maintainers:
   - name: AlexMorbo
     email: alex@morbo.ru
 sources:
   - https://github.com/alexmorbo/helm-charts/tree/master/charts/lldap
-  - https://github.com/Evantage-WS/lldap-kubernetes/tree/main/lldap-chart
 icon: https://raw.githubusercontent.com/alexmorbo/helm-charts/refs/heads/master/docs/assets/logo.svg
-home: https://github.com/lldap/lldap
+home: https://github.com/alexmorbo/helm-charts
+keywords:
+  - ldap
+  - lldap
+  - user-management
+  - auth
+annotations:
+  artifacthub.io/links: |-
+    - name: App Source
+      url: https://github.com/lldap/lldap
+    - name: Chart Source
+      url: https://github.com/alexmorbo/helm-charts/tree/master/charts/lldap

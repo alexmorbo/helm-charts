@@ -3,13 +3,25 @@ kubeVersion: ">=1.23.0-0"
 name: qbittorrent
 description: qbittorrent helm chart for Kubernetes
 type: application
-version: 1.0.16
+version: 1.0.17
 appVersion: "4.6.6"
 maintainers:
   - name: AlexMorbo
     email: alex@morbo.ru
 sources:
   - https://github.com/alexmorbo/helm-charts/tree/master/charts/qbittorrent
-  - https://github.com/M0NsTeRRR/helm-charts
 icon: https://raw.githubusercontent.com/alexmorbo/helm-charts/refs/heads/master/docs/assets/logo.svg
-home: https://github.com/qbittorrent/qBittorrent
+home: https://github.com/alexmorbo/helm-charts
+keywords:
+  - qbittorrent
+  - bittorrent
+  - download
+  - torrent
+  - torrents
+  - media
+annotations:
+  artifacthub.io/links: |-
+    - name: App Source
+      url: https://github.com/qbittorrent/qBittorrent
+    - name: Chart Source
+      url: https://github.com/alexmorbo/helm-charts/tree/master/charts/qbittorrent

@@ -1,4 +1,19 @@
 repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: fix-byte-order-marker
+      - id: mixed-line-ending
+      - id: check-case-conflict
+
+  - repo: https://github.com/Lucas-C/pre-commit-hooks
+    rev: v1.5.5
+    hooks:
+      - id: remove-crlf
+      - id: remove-tabs
+
   - repo: https://github.com/norwoodj/helm-docs
     rev: v1.14.2
     hooks:
@@ -6,3 +21,12 @@ repos:
         args:
           - --template-files=./_templates.gotmpl
           - --template-files=README.md.gotmpl
+
+  - repo: local
+    hooks:
+      - id: ah-lint
+        name: Artifact Hub Lint
+        entry: ah lint --path=charts
+        language: system
+        files: ^charts/
+        pass_filenames: false

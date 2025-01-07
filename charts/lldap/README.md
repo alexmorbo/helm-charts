@@ -1,13 +1,13 @@
 
 # lldap
 
-![Version: 1.0.2](https://img.shields.io/badge/Version-1.0.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.6.1](https://img.shields.io/badge/AppVersion-0.6.1-informational?style=flat-square)
+![Version: 1.0.3](https://img.shields.io/badge/Version-1.0.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.6.1](https://img.shields.io/badge/AppVersion-0.6.1-informational?style=flat-square)
 
 LLDAP helm chart for Kubernetes
 
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/lldap)](https://artifacthub.io/packages/search?repo=lldap)
 
-**Homepage:** <https://github.com/lldap/lldap>
+**Homepage:** <https://github.com/alexmorbo/helm-charts>
 
 ## Maintainers
 
@@ -18,7 +18,6 @@ LLDAP helm chart for Kubernetes
 ## Source Code
 
 * <https://github.com/alexmorbo/helm-charts/tree/master/charts/lldap>
-* <https://github.com/Evantage-WS/lldap-kubernetes/tree/main/lldap-chart>
 
 ## Requirements
 
