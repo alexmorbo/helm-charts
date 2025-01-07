@@ -20,8 +20,16 @@ keywords:
   - torrents
   - media
 annotations:
+  artifacthub.io/license: MIT
   artifacthub.io/links: |-
     - name: App Source
       url: https://github.com/qbittorrent/qBittorrent
     - name: Chart Source
       url: https://github.com/alexmorbo/helm-charts/tree/master/charts/qbittorrent
+  artifacthub.io/images: |
+    - name: qbittorrent
+      image: onedr0p/qbittorrent:4.6.6
+    - name: exporter
+      image: esanchezm/prometheus-qbittorrent-exporter:v1.6.0
+    - name: manage
+      image: stuffanthings/qbit_manage:v4.1.15

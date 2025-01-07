@@ -17,8 +17,12 @@ keywords:
   - ipmi
   - fans
 annotations:
+  artifacthub.io/license: MIT
   artifacthub.io/links: |-
     - name: App Source
       url: https://github.com/alexmorbo/Dell_iDRAC_fan_controller_Docker
     - name: Chart Source
       url: https://github.com/alexmorbo/helm-charts/tree/master/charts/dell-fan-controller
+  artifacthub.io/images: |
+    - name: dell-fan-controller
+      image: alexmorbo/dell_idrac_fan_controller:v0.1.6

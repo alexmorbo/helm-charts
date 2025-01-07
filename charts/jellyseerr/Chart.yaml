@@ -17,8 +17,12 @@ keywords:
   - jellyfin
   - media
 annotations:
+  artifacthub.io/license: MIT
   artifacthub.io/links: |-
     - name: App Source
       url: https://github.com/Fallenbagel/jellyseerr
     - name: Chart Source
       url: https://github.com/alexmorbo/helm-charts/tree/master/charts/jellyseerr
+  artifacthub.io/images: |
+    - name: jellyseerr
+      image: fallenbagel/jellyseerr:2.2.3

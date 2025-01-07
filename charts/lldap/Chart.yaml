@@ -18,8 +18,12 @@ keywords:
   - user-management
   - auth
 annotations:
+  artifacthub.io/license: MIT
   artifacthub.io/links: |-
     - name: App Source
       url: https://github.com/lldap/lldap
     - name: Chart Source
       url: https://github.com/alexmorbo/helm-charts/tree/master/charts/lldap
+  artifacthub.io/images: |
+    - name: lldap
+      image: lldap/lldap:2024-11-22

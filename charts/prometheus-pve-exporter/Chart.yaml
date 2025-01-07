@@ -20,8 +20,15 @@ keywords:
   - monitoring
   - metrics
 annotations:
+  artifacthub.io/license: MIT
   artifacthub.io/links: |-
     - name: App Source
       url: https://github.com/prometheus-pve/prometheus-pve-exporter
     - name: Chart Source
       url: https://github.com/alexmorbo/helm-charts/tree/master/charts/prometheus-pve-exporter
+    - name: support
+      url: https://github.com/alexmorbo/helm-charts/issues
+  artifacthub.io/category: monitoring-logging
+  artifacthub.io/images: |
+    - name: prometheus-pve-exporter
+      image: prompve/prometheus-pve-exporter:3.5.0
