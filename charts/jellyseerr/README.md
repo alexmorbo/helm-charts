@@ -1,8 +1,11 @@
-# Jellyseerr
+
+# jellyseerr
 
 ![Version: 1.0.0](https://img.shields.io/badge/Version-1.0.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.2.3](https://img.shields.io/badge/AppVersion-2.2.3-informational?style=flat-square)
 
 Jellyseerr helm chart for Kubernetes
+
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/jellyseerr)](https://artifacthub.io/packages/search?repo=jellyseerr)
 
 **Homepage:** <https://github.com/Fallenbagel/jellyseerr>
 
@@ -11,10 +14,10 @@ Jellyseerr helm chart for Kubernetes
 | Name | Email | Url |
 | ---- | ------ | --- |
 | AlexMorbo | <alex@morbo.ru> |  |
-| Jellyseerr |  | <https://github.com/Fallenbagel/jellyseerr> |
 
 ## Source Code
 
+* <https://github.com/alexmorbo/helm-charts/tree/master/charts/jellyseerr>
 * <https://github.com/Fallenbagel/jellyseerr/tree/main/charts/jellyseerr>
 
 ## Requirements
@@ -23,7 +26,7 @@ Kubernetes: `>=1.23.0-0`
 
 ## Install
 ```console
-helm install Jellyseerr oci://ghcr.io/alexmorbo/helm-charts/Jellyseerr
+helm install jellyseerr oci://ghcr.io/alexmorbo/helm-charts/jellyseerr
 ```
 
 ## Values

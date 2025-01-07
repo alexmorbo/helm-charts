@@ -1,8 +1,11 @@
+
 # lldap
 
 ![Version: 1.0.0](https://img.shields.io/badge/Version-1.0.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.6.1](https://img.shields.io/badge/AppVersion-0.6.1-informational?style=flat-square)
 
 LLDAP helm chart for Kubernetes
+
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/lldap)](https://artifacthub.io/packages/search?repo=lldap)
 
 **Homepage:** <https://github.com/lldap/lldap>
 

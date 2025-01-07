@@ -1,6 +1,9 @@
+
 # prometheus-pve-exporter
 
 ![Version: 1.0.0](https://img.shields.io/badge/Version-1.0.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.5.0](https://img.shields.io/badge/AppVersion-3.5.0-informational?style=flat-square)
+
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/prometheus-pve-exporter)](https://artifacthub.io/packages/search?repo=prometheus-pve-exporter)
 
 prometheus-pve-exporter helm chart for Kubernetes
 
@@ -141,7 +144,5 @@ helm install prometheus-pve-exporter oci://ghcr.io/alexmorbo/helm-charts/prometh
 | serviceAccount.automount | bool | `true` | Automatically mount a ServiceAccount's API credentials? |
 | serviceAccount.create | bool | `true` | Specifies whether a service account should be created |
 | serviceAccount.name | string | `""` | If not set and create is true, a name is generated using the fullname template |
-| serviceMonitor.interval | string | `"30s"` |  |
-| serviceMonitor.scrapeTimeout | string | `"30s"` |  |
 | tolerations | list | `[]` |  |
 | updateStrategy | object | `{"type":"RollingUpdate"}` | Deployment strategy |

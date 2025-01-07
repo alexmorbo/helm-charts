@@ -28,16 +28,20 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "qbittorrent.serviceAccountName" . }}
+      {{- with .Values.qbittorrent.podSecurityContext }}
       securityContext:
-        {{- toYaml .Values.qbittorrent.podSecurityContext | nindent 8 }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- with .Values.qbittorrent.extraInitContainers }}
       initContainers:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}
+          {{- with .Values.qbittorrent.securityContext }}
           securityContext:
-            {{- toYaml .Values.qbittorrent.securityContext | nindent 12 }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- if .Values.qbittorrent.image.sha }}
           image: "{{ .Values.qbittorrent.image.registry }}/{{ .Values.qbittorrent.image.repository }}:{{ .Values.qbittorrent.image.tag | default .Chart.AppVersion }}@sha256:{{ .Values.qbittorrent.image.sha }}"
           {{- else }}
@@ -54,8 +58,10 @@ spec:
             - name: qbt-torrent-udp
               containerPort: {{ .Values.qbittorrent.service.torrent.port }}
               protocol: UDP
+          {{- with .Values.qbittorrent.resources }}
           resources:
-            {{- toYaml .Values.qbittorrent.resources | nindent 12 }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- with .Values.qbittorrent.extraEnv }}
           env:
             {{- toYaml . | nindent 12 }}
