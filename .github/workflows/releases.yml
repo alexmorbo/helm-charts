@@ -115,4 +115,7 @@ jobs:
               --config /dev/null:application/vnd.cncf.artifacthub.config.v1+yaml \
               charts/$chart/artifacthub-repo.yml:application/vnd.cncf.artifacthub.repository-metadata.layer.v1.yaml \
               |& tee oras-push-output.log
+            artifacthub_digest=$(grep "Digest:" oras-push-output.log | awk '{print $2}')
+            # sign artifacthub-repo.yml
+            cosign sign "ghcr.io/${GITHUB_REPOSITORY@L}/${chart}:artifacthub.io@${artifacthub_digest}"
           done
