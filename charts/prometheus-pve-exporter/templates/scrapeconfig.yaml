@@ -16,5 +16,6 @@ spec:
   staticConfigs:
     - targets:
         - {{ include "prometheus-pve-exporter.serviceName" $ }}.{{ $.Release.Namespace }}:{{ include "prometheus-pve-exporter.servicePort" $ }}
+---
 {{- end }}
 {{- end }}
