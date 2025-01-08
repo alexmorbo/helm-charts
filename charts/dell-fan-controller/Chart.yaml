@@ -3,8 +3,8 @@ kubeVersion: ">=1.23.0-0"
 name: dell-fan-controller
 description: Dell Fan Controller helm chart for Kubernetes
 type: application
-version: 1.0.3
-appVersion: "0.1.6"
+version: 1.0.4
+appVersion: "0.1.6-1"
 maintainers:
   - name: AlexMorbo
     email: alex@morbo.ru
@@ -18,6 +18,8 @@ keywords:
   - fans
 annotations:
   artifacthub.io/license: MIT
+  artifacthub.io/changes: |
+    - Update image to v0.1.6-1
   artifacthub.io/links: |-
     - name: App Source
       url: https://github.com/alexmorbo/Dell_iDRAC_fan_controller_Docker
@@ -25,4 +27,4 @@ annotations:
       url: https://github.com/alexmorbo/helm-charts/tree/master/charts/dell-fan-controller
   artifacthub.io/images: |
     - name: dell-fan-controller
-      image: alexmorbo/dell_idrac_fan_controller:v0.1.6
+      image: alexmorbo/dell_idrac_fan_controller:v0.1.6-1
