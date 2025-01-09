@@ -1,7 +1,7 @@
 
 # dell-fan-controller
 
-![Version: 1.0.5](https://img.shields.io/badge/Version-1.0.5-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.1.6-1](https://img.shields.io/badge/AppVersion-0.1.6--1-informational?style=flat-square)
+![Version: 1.0.6](https://img.shields.io/badge/Version-1.0.6-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.1.6-1](https://img.shields.io/badge/AppVersion-0.1.6--1-informational?style=flat-square)
 
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/dell-fan-controller)](https://artifacthub.io/packages/search?repo=dell-fan-controller)
 
@@ -41,7 +41,7 @@ helm install dell-fan-controller oci://ghcr.io/alexmorbo/helm-charts/dell-fan-co
 | image.registry | string | `"ghcr.io"` |  |
 | image.repository | string | `"alexmorbo/dell_idrac_fan_controller"` |  |
 | image.sha | string | `""` |  |
-| image.tag | string | `"v0.1.6"` | Overrides the image tag whose default is the chart appVersion. |
+| image.tag | string | `""` | Overrides the image tag whose default is the chart appVersion. |
 | imagePullSecrets | list | `[]` |  |
 | nameOverride | string | `""` |  |
 | nodeSelector | object | `{}` |  |
