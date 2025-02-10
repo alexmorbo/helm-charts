@@ -5,16 +5,16 @@ metadata:
   labels:
     {{- include "youtrack.labels" . | nindent 4 }}
 spec:
-  {{- with .Values.persistence.backup.accessModes }}
+  {{- with .Values.persistence.backups.accessModes }}
   accessModes:
     {{- toYaml . | nindent 4 }}
   {{- end }}
-  {{- if .Values.persistence.backup.volumeName }}
-  volumeName: {{ .Values.persistence.backup.volumeName }}
+  {{- if .Values.persistence.backups.volumeName }}
+  volumeName: {{ .Values.persistence.backups.volumeName }}
   {{- end }}
-  {{- with .Values.persistence.backup.storageClass }}
+  {{- with .Values.persistence.backups.storageClass }}
   storageClassName: {{ if (eq "-" .) }}""{{ else }}{{ . }}{{ end }}
   {{- end }}
   resources:
     requests:
-      storage: "{{ .Values.persistence.backup.size }}"
+      storage: "{{ .Values.persistence.backups.size }}"
