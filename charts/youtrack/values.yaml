@@ -192,6 +192,23 @@ persistence:
     volumeName: ""
     # -- Name of the storage class
     storageClass: ""
+  utils:
+    # -- Specifies whether a persistent volume should be created
+    enabled: true
+    # -- Size of persistent disk
+    size: 1Gi
+    # -- Annotations for PVCs
+    annotations: {}
+    # -- Access modes of persistent disk
+    accessModes:
+      - ReadWriteOnce
+    # -- PVC name
+    name: ""
+    # -- Name of the permanent volume to reference in the claim.
+    # Can be used to bind to existing volumes.
+    volumeName: ""
+    # -- Name of the storage class
+    storageClass: ""
 
 # -- Service
 # -- https://kubernetes.io/docs/concepts/services-networking/service

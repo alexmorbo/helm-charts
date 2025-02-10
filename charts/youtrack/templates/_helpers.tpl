@@ -84,6 +84,13 @@ Create the name of the config persistence to use
 {{- end }}
 
 {{/*
+Create the name of the config persistence to use
+*/}}
+{{- define "youtrack.utilsPersistenceName" -}}
+{{- default (printf "%s-utils" (include "youtrack.fullname" .)) .Values.persistence.utils.name }}
+{{- end }}
+
+{{/*
 Create the name of the secret to use
 */}}
 {{- define "youtrack.serviceName" -}}
