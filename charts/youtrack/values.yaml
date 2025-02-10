@@ -1,0 +1,230 @@
+# -- Image
+image:
+  registry: docker.io
+  repository: jetbrains/youtrack
+  pullPolicy: IfNotPresent
+  # -- Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+  sha: ""
+
+# -- Replica count
+# -- https://kubernetes.io/docs/concepts/workloads/controllers/replicationcontroller/
+replicaCount: 1
+
+# -- Image pull secrets
+# -- https://kubernetes.io/docs/concepts/containers/images/#specifying-imagepullsecrets-on-a-pod
+imagePullSecrets: []
+# -- If this is set, release name will be used as the chart name
+nameOverride: ""
+# -- If this is set, release name will be used as the chart name
+fullnameOverride: ""
+
+# -- Deployment strategy
+updateStrategy:
+  type: RollingUpdate
+
+# -- Environment variables
+# -- https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container
+env: {}
+
+# -- Additional Environment variables
+# -- https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container
+extraEnv: []
+#  - name: TZ
+#    value: "UTC"
+
+# -- Environment variables from secrets or configmaps to add
+# -- https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container
+extraEnvFrom: []
+#  - secretRef:
+#      name: some-secret
+
+# -- Service account
+# -- https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account
+serviceAccount:
+  # -- Specifies whether a service account should be created
+  create: true
+  # -- Automatically mount a ServiceAccount's API credentials?
+  automount: true
+  # -- Annotations to add to the service account
+  annotations: {}
+  # -- The name of the service account to use.
+  # -- If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+# -- Pod annotations
+# -- https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations
+podAnnotations: {}
+# -- Pod labels
+# -- https://kubernetes.io/docs/concepts/overview/working-with-objects/labels
+podLabels: {}
+# -- Init containers
+# -- https://kubernetes.io/docs/concepts/workloads/pods/init-containers
+extraInitContainers: []
+# -- Volume mounts
+# -- https://kubernetes.io/docs/concepts/storage/volumes
+extraVolumeMounts: []
+# - name: data
+#   mountPath: /data
+# - name: example
+#   mountPath: /example
+# - name: foo
+#   mountPath: /foo
+
+# -- Volumes.
+# -- https://kubernetes.io/docs/concepts/storage/volumes
+extraVolumes: []
+# - name: data
+#   persistentVolumeClaim:
+#     claimName: data-pv-volume
+# - name: example
+#   configMap:
+#     name: example
+# - name: foo
+#   emptyDir: {}
+
+# -- Pod security context
+# -- https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+podSecurityContext:
+  fsGroup: 1000
+  fsGroupChangePolicy: OnRootMismatch
+
+# -- Security context
+# -- https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: false
+  runAsNonRoot: true
+  privileged: false
+  runAsUser: 1000
+  runAsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+
+# -- Pod lifecycle
+# -- https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle
+livenessProbe: {}
+#  httpGet:
+#    path: /
+#    port: http
+
+# -- Pod lifecycle
+# -- https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle
+readinessProbe: {}
+#  httpGet:
+#    path: /
+#    port: http
+
+# -- Pod resources
+# -- https://kubernetes.io/docs/concepts/configuration/manage-resources-containers
+resources: {}
+
+# -- Node selectors
+# -- https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node
+nodeSelector: {}
+#  kubernetes.io/os: linux
+
+# -- Tolerations
+# -- https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration
+tolerations: []
+#  - key: "kubernetes.io/os"
+#    operator: "Exists"
+#    effect: "NoSchedule"
+
+# -- Pod affinity
+# -- https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node
+affinity: {}
+
+# -- PVC
+# -- https://kubernetes.io/docs/concepts/storage/persistent-volumes
+persistence:
+  config:
+    # -- Specifies whether a persistent volume should be created
+    enabled: true
+    # -- Size of persistent disk
+    size: 1Gi
+    # -- Annotations for PVCs
+    annotations: {}
+    # -- Access modes of persistent disk
+    accessModes:
+      - ReadWriteOnce
+    # -- PVC name
+    name: ""
+    # -- Name of the permanent volume to reference in the claim.
+    # Can be used to bind to existing volumes.
+    volumeName: ""
+    # -- Name of the storage class
+    storageClass: ""
+  data:
+    # -- Specifies whether a persistent volume should be created
+    enabled: true
+    # -- Size of persistent disk
+    size: 10Gi
+    # -- Annotations for PVCs
+    annotations: {}
+    # -- Access modes of persistent disk
+    accessModes:
+      - ReadWriteOnce
+    # -- PVC name
+    name: ""
+    # -- Name of the permanent volume to reference in the claim.
+    # Can be used to bind to existing volumes.
+    volumeName: ""
+    # -- Name of the storage class
+    storageClass: ""
+  backup:
+    # -- Specifies whether a persistent volume should be created
+    enabled: true
+    # -- Size of persistent disk
+    size: 50Gi
+    # -- Annotations for PVCs
+    annotations: {}
+    # -- Access modes of persistent disk
+    accessModes:
+      - ReadWriteOnce
+    # -- PVC name
+    name: ""
+    # -- Name of the permanent volume to reference in the claim.
+    # Can be used to bind to existing volumes.
+    volumeName: ""
+    # -- Name of the storage class
+    storageClass: ""
+
+# -- Service
+# -- https://kubernetes.io/docs/concepts/services-networking/service
+service:
+  # -- Annotations
+  annotations: {}
+    # metallb.universe.tf/loadBalancerIPs: "10.0.0.10"
+  # Type
+  type: ClusterIP
+  # Port
+  port: 8080
+  # Target port
+  containerPort: 8080
+
+# -- Ingress
+# -- https://kubernetes.io/docs/concepts/services-networking/ingress
+ingress:
+  # -- If true, an ingress will be created
+  enabled: false
+  # -- Ingress class
+  ingressClassName: ""
+  # -- Annotations
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  # -- Hosts
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  # -- TLS
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local

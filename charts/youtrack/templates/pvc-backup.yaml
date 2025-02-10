@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "youtrack.backupPersistenceName" . }}
+  labels:
+    {{- include "youtrack.labels" . | nindent 4 }}
+spec:
+  {{- with .Values.persistence.backup.accessModes }}
+  accessModes:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- if .Values.persistence.backup.volumeName }}
+  volumeName: {{ .Values.persistence.backup.volumeName }}
+  {{- end }}
+  {{- with .Values.persistence.backup.storageClass }}
+  storageClassName: {{ if (eq "-" .) }}""{{ else }}{{ . }}{{ end }}
+  {{- end }}
+  resources:
+    requests:
+      storage: "{{ .Values.persistence.backup.size }}"
