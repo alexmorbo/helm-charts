@@ -86,9 +86,9 @@ spec:
         - name: data
           persistentVolumeClaim:
             claimName: {{ include "youtrack.dataPersistenceName" . }}
-        - name: backup
+        - name: backups
           persistentVolumeClaim:
-            claimName: {{ include "youtrack.backupPersistenceName" . }}
+            claimName: {{ include "youtrack.backupsPersistenceName" . }}
         - name: logs
           emptyDir: {}
         {{- with .Values.extraVolumes }}

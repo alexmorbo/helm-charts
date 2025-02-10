@@ -175,7 +175,7 @@ persistence:
     volumeName: ""
     # -- Name of the storage class
     storageClass: ""
-  backup:
+  backups:
     # -- Specifies whether a persistent volume should be created
     enabled: true
     # -- Size of persistent disk

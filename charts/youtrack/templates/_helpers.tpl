@@ -79,8 +79,8 @@ Create the name of the config persistence to use
 {{/*
 Create the name of the config persistence to use
 */}}
-{{- define "youtrack.backupPersistenceName" -}}
-{{- default (printf "%s-backup" (include "youtrack.fullname" .)) .Values.persistence.backup.name }}
+{{- define "youtrack.backupsPersistenceName" -}}
+{{- default (printf "%s-backups" (include "youtrack.fullname" .)) .Values.persistence.backups.name }}
 {{- end }}
 
 {{/*

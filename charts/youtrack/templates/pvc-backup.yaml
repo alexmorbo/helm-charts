@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ include "youtrack.backupPersistenceName" . }}
+  name: {{ include "youtrack.backupsPersistenceName" . }}
   labels:
     {{- include "youtrack.labels" . | nindent 4 }}
 spec:
