@@ -76,6 +76,8 @@ spec:
               name: backups
             - mountPath: /opt/youtrack/logs
               name: logs
+            - mountPath: /opt/youtrack/temp
+              name: temp
           {{- with .Values.extraVolumeMounts }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
@@ -90,6 +92,8 @@ spec:
           persistentVolumeClaim:
             claimName: {{ include "youtrack.backupsPersistenceName" . }}
         - name: logs
+          emptyDir: {}
+        - name: temp
           emptyDir: {}
         {{- with .Values.extraVolumes }}
           {{- toYaml . | nindent 10 }}
