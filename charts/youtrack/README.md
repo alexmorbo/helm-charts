@@ -1,7 +1,7 @@
 
 # youtrack
 
-![Version: 0.1.7](https://img.shields.io/badge/Version-0.1.7-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2024.3.57595](https://img.shields.io/badge/AppVersion-2024.3.57595-informational?style=flat-square)
+![Version: 0.1.8](https://img.shields.io/badge/Version-0.1.8-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2024.3.57595](https://img.shields.io/badge/AppVersion-2024.3.57595-informational?style=flat-square)
 
 Youtrack helm chart for Kubernetes
 
@@ -52,7 +52,7 @@ helm install youtrack oci://ghcr.io/alexmorbo/helm-charts/youtrack
 | livenessProbe | object | `{}` | https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle |
 | nameOverride | string | `""` | If this is set, release name will be used as the chart name |
 | nodeSelector | object | `{}` | https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node |
-| persistence | object | `{"backups":{"accessModes":["ReadWriteOnce"],"annotations":{},"enabled":true,"name":"","size":"50Gi","storageClass":"","volumeName":""},"config":{"accessModes":["ReadWriteOnce"],"annotations":{},"enabled":true,"name":"","size":"1Gi","storageClass":"","volumeName":""},"data":{"accessModes":["ReadWriteOnce"],"annotations":{},"enabled":true,"name":"","size":"10Gi","storageClass":"","volumeName":""},"utils":{"accessModes":["ReadWriteOnce"],"annotations":{},"enabled":true,"name":"","size":"1Gi","storageClass":"","volumeName":""}}` | https://kubernetes.io/docs/concepts/storage/persistent-volumes |
+| persistence | object | `{"backups":{"accessModes":["ReadWriteOnce"],"annotations":{},"enabled":true,"name":"","size":"50Gi","storageClass":"","volumeName":""},"config":{"accessModes":["ReadWriteOnce"],"annotations":{},"enabled":true,"name":"","size":"1Gi","storageClass":"","volumeName":""},"data":{"accessModes":["ReadWriteOnce"],"annotations":{},"enabled":true,"name":"","size":"10Gi","storageClass":"","volumeName":""},"logs":{"accessModes":["ReadWriteOnce"],"annotations":{},"enabled":false,"name":"","size":"10Gi","storageClass":"","volumeName":""},"temp":{"accessModes":["ReadWriteOnce"],"annotations":{},"enabled":true,"name":"","size":"50Gi","storageClass":"","volumeName":""},"utils":{"accessModes":["ReadWriteOnce"],"annotations":{},"enabled":true,"name":"","size":"1Gi","storageClass":"","volumeName":""}}` | https://kubernetes.io/docs/concepts/storage/persistent-volumes |
 | persistence.backups.accessModes | list | `["ReadWriteOnce"]` | Access modes of persistent disk |
 | persistence.backups.annotations | object | `{}` | Annotations for PVCs |
 | persistence.backups.enabled | bool | `true` | Specifies whether a persistent volume should be created |
@@ -74,6 +74,20 @@ helm install youtrack oci://ghcr.io/alexmorbo/helm-charts/youtrack
 | persistence.data.size | string | `"10Gi"` | Size of persistent disk |
 | persistence.data.storageClass | string | `""` | Name of the storage class |
 | persistence.data.volumeName | string | `""` | Name of the permanent volume to reference in the claim. Can be used to bind to existing volumes. |
+| persistence.logs.accessModes | list | `["ReadWriteOnce"]` | Access modes of persistent disk |
+| persistence.logs.annotations | object | `{}` | Annotations for PVCs |
+| persistence.logs.enabled | bool | `false` | Specifies whether a persistent volume should be created |
+| persistence.logs.name | string | `""` | PVC name |
+| persistence.logs.size | string | `"10Gi"` | Size of persistent disk |
+| persistence.logs.storageClass | string | `""` | Name of the storage class |
+| persistence.logs.volumeName | string | `""` | Name of the permanent volume to reference in the claim. Can be used to bind to existing volumes. |
+| persistence.temp.accessModes | list | `["ReadWriteOnce"]` | Access modes of persistent disk |
+| persistence.temp.annotations | object | `{}` | Annotations for PVCs |
+| persistence.temp.enabled | bool | `true` | Specifies whether a persistent volume should be created |
+| persistence.temp.name | string | `""` | PVC name |
+| persistence.temp.size | string | `"50Gi"` | Size of persistent disk |
+| persistence.temp.storageClass | string | `""` | Name of the storage class |
+| persistence.temp.volumeName | string | `""` | Name of the permanent volume to reference in the claim. Can be used to bind to existing volumes. |
 | persistence.utils.accessModes | list | `["ReadWriteOnce"]` | Access modes of persistent disk |
 | persistence.utils.annotations | object | `{}` | Annotations for PVCs |
 | persistence.utils.enabled | bool | `true` | Specifies whether a persistent volume should be created |

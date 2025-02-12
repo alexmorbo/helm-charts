@@ -89,21 +89,47 @@ spec:
           {{- end }}
       volumes:
         - name: config
+        {{- if .Values.persistence.config.enabled }}
           persistentVolumeClaim:
             claimName: {{ include "youtrack.configPersistenceName" . }}
+        {{ else }}
+          emptyDir: {}
+        {{- end }}
         - name: data
+        {{- if .Values.persistence.data.enabled }}
           persistentVolumeClaim:
             claimName: {{ include "youtrack.dataPersistenceName" . }}
+        {{ else }}
+          emptyDir: {}
+        {{- end }}
         - name: backups
+        {{- if .Values.persistence.backups.enabled }}
           persistentVolumeClaim:
             claimName: {{ include "youtrack.backupsPersistenceName" . }}
+        {{ else }}
+          emptyDir: {}
+        {{- end }}
         - name: utils
+        {{- if .Values.persistence.utils.enabled }}
           persistentVolumeClaim:
             claimName: {{ include "youtrack.utilsPersistenceName" . }}
-        - name: logs
+        {{ else }}
           emptyDir: {}
+        {{- end }}
         - name: temp
+        {{- if .Values.persistence.temp.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "youtrack.tempPersistenceName" . }}
+        {{ else }}
           emptyDir: {}
+        {{- end }}
+        - name: logs
+        {{- if .Values.persistence.logs.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "youtrack.logsPersistenceName" . }}
+        {{ else }}
+          emptyDir: {}
+        {{- end }}
         {{- with .Values.extraVolumes }}
           {{- toYaml . | nindent 8 }}
         {{- end }}

@@ -70,24 +70,38 @@ Create the name of the config persistence to use
 {{- end }}
 
 {{/*
-Create the name of the config persistence to use
+Create the name of the data persistence to use
 */}}
 {{- define "youtrack.dataPersistenceName" -}}
 {{- default (printf "%s-data" (include "youtrack.fullname" .)) .Values.persistence.data.name }}
 {{- end }}
 
 {{/*
-Create the name of the config persistence to use
+Create the name of the backups persistence to use
 */}}
 {{- define "youtrack.backupsPersistenceName" -}}
 {{- default (printf "%s-backups" (include "youtrack.fullname" .)) .Values.persistence.backups.name }}
 {{- end }}
 
 {{/*
-Create the name of the config persistence to use
+Create the name of the utils persistence to use
 */}}
 {{- define "youtrack.utilsPersistenceName" -}}
 {{- default (printf "%s-utils" (include "youtrack.fullname" .)) .Values.persistence.utils.name }}
+{{- end }}
+
+{{/*
+Create the name of the temp persistence to use
+*/}}
+{{- define "youtrack.tempPersistenceName" -}}
+{{- default (printf "%s-temp" (include "youtrack.fullname" .)) .Values.persistence.temp.name }}
+{{- end }}
+
+{{/*
+Create the name of the logs persistence to use
+*/}}
+{{- define "youtrack.logsPersistenceName" -}}
+{{- default (printf "%s-logs" (include "youtrack.fullname" .)) .Values.persistence.logs.name }}
 {{- end }}
 
 {{/*

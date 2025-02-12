@@ -1,0 +1,22 @@
+{{- if .Values.persistence.temp.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "youtrack.tempPersistenceName" . }}
+  labels:
+    {{- include "youtrack.labels" . | nindent 4 }}
+spec:
+  {{- with .Values.persistence.temp.accessModes }}
+  accessModes:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- if .Values.persistence.temp.volumeName }}
+  volumeName: {{ .Values.persistence.temp.volumeName }}
+  {{- end }}
+  {{- with .Values.persistence.temp.storageClass }}
+  storageClassName: {{ if (eq "-" .) }}""{{ else }}{{ . }}{{ end }}
+  {{- end }}
+  resources:
+    requests:
+      storage: "{{ .Values.persistence.temp.size }}"
+{{- end }}
