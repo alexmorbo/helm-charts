@@ -1,7 +1,7 @@
 
 # lldap
 
-![Version: 1.0.4](https://img.shields.io/badge/Version-1.0.4-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2025-05-19-alpine](https://img.shields.io/badge/AppVersion-2025--05--19--alpine-informational?style=flat-square)
+![Version: 1.0.5](https://img.shields.io/badge/Version-1.0.5-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2025-05-19-alpine](https://img.shields.io/badge/AppVersion-2025--05--19--alpine-informational?style=flat-square)
 
 LLDAP helm chart for Kubernetes
 
@@ -45,7 +45,7 @@ helm install lldap oci://ghcr.io/alexmorbo/helm-charts/lldap
 | image.registry | string | `"ghcr.io"` |  |
 | image.repository | string | `"lldap/lldap"` |  |
 | image.sha | string | `""` |  |
-| image.tag | string | `"v0.6.1-alpine"` | Overrides the image tag whose default is the chart appVersion. |
+| image.tag | string | `"2025-05-19-alpine"` | Overrides the image tag whose default is the chart appVersion. |
 | imagePullSecrets | list | `[]` |  |
 | ingress.annotations | object | `{}` |  |
 | ingress.enabled | bool | `false` |  |

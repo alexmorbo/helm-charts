@@ -5,7 +5,7 @@ image:
   repository: lldap/lldap
   pullPolicy: IfNotPresent
   # -- Overrides the image tag whose default is the chart appVersion.
-  tag: "v0.6.1-alpine"
+  tag: "2025-05-19-alpine"
   sha: ""
 
 imagePullSecrets: []
