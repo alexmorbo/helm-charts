@@ -1,7 +1,7 @@
 
 # lldap
 
-![Version: 1.0.3](https://img.shields.io/badge/Version-1.0.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.6.1](https://img.shields.io/badge/AppVersion-0.6.1-informational?style=flat-square)
+![Version: 1.0.4](https://img.shields.io/badge/Version-1.0.4-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2025-05-19-alpine](https://img.shields.io/badge/AppVersion-2025--05--19--alpine-informational?style=flat-square)
 
 LLDAP helm chart for Kubernetes
 
@@ -58,6 +58,7 @@ helm install lldap oci://ghcr.io/alexmorbo/helm-charts/lldap
 | nodeSelector | object | `{}` |  |
 | persistence.accessModes | list | `["ReadWriteOnce"]` | Access modes of persistent disk |
 | persistence.annotations | object | `{}` | Annotations for PVCs |
+| persistence.enabled | bool | `true` |  |
 | persistence.size | string | `"100Mi"` | Size of persistent disk |
 | persistence.storageClass | string | `""` |  |
 | persistence.volumeName | string | `""` | Name of the permanent volume to reference in the claim. Can be used to bind to existing volumes. |

@@ -83,22 +83,26 @@ spec:
             - name: ldap
               containerPort: {{ .Values.service.ldap_port }}
               protocol: TCP
+          {{- if .Values.persistence.enabled }}
           volumeMounts:
             - mountPath: /data
               name: lldap-data
+          {{- end }}
+      {{- if .Values.persistence.enabled }}
       volumes:
         - name: lldap-data
           persistentVolumeClaim:
             claimName: {{ include "lldap.persistenceName" . }}
+      {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
-        {{- toYaml . | nindent 6 }}
+        {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.tolerations }}
       tolerations:
-        {{- toYaml . | nindent 6 }}
+        {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.affinity }}
       affinity:
-        {{- toYaml . | nindent 6 }}
+        {{- toYaml . | nindent 8 }}
       {{- end }}

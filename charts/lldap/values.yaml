@@ -45,6 +45,7 @@ secret:
   lldapBaseDn: "dc=homelab,dc=local"
 
 persistence:
+  enabled: true
   # -- Size of persistent disk
   size: 100Mi
   # -- Annotations for PVCs
