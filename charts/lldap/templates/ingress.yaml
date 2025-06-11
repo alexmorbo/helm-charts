@@ -20,7 +20,7 @@ spec:
         {{- range .hosts }}
         - {{ . | quote }}
         {{- end }}
-      secretName: {{ .secretName }}
+      secretName: {{ include "lldap.certsSecretName" $ }}
     {{- end }}
   {{- end }}
   rules:

@@ -15,6 +15,12 @@ spec:
       targetPort: ldap
       protocol: TCP
       name: ldap
+    {{- if .Values.service.ldaps_enabled }}
+    - port: {{ .Values.service.ldaps_port }}
+      targetPort: ldaps
+      protocol: TCP
+      name: ldaps
+    {{- end }}
     - port: {{ .Values.service.http_port }}
       targetPort: http
       protocol: TCP

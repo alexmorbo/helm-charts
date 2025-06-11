@@ -4,7 +4,7 @@ metadata:
   name: {{ include "lldap.fullname" . }}
   labels:
     {{- include "lldap.labels" . | nindent 4 }}
-  {{- with .Values.annotations }}
+  {{- with .Values.podAnnotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
@@ -12,14 +12,17 @@ spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      {{- include "lldap.labels" . | nindent 6 }}
+      {{- include "lldap.selectorLabels" . | nindent 6 }}
   strategy:
     type: {{ .Values.updateStrategy.type }}
   template:
     metadata:
       labels:
         {{- include "lldap.labels" . | nindent 8 }}
-      {{- with .Values.annotations }}
+        {{- with .Values.podLabels }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -37,10 +40,18 @@ spec:
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}
+          {{- $imageSuffix := "" }}
+          {{- if .Values.securityContext.readOnlyRootFilesystem }}
+            {{- $imageSuffix = "-rootless" }}
+          {{- end }}
           {{- if .Values.image.sha }}
-          image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}@sha256:{{ .Values.image.sha }}"
+          image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}{{ $imageSuffix }}@sha256:{{ .Values.image.sha }}"
           {{- else }}
-          image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}{{ $imageSuffix }}"
+          {{- end }}
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
           {{- end }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           {{- with .Values.resources }}
@@ -69,6 +80,14 @@ spec:
                 secretKeyRef:
                   name: {{ include "lldap.secretName" . }}
                   key: lldap-ldap-user-pass
+            {{- if .Values.service.ldaps_enabled }}
+            - name: LLDAP_LDAPS_OPTIONS__ENABLED
+              value: "true"
+            - name: LLDAP_LDAPS_OPTIONS__CERT_FILE
+              value: "/etc/ssl/certs/tls.crt"
+            - name: LLDAP_LDAPS_OPTIONS__KEY_FILE
+              value: "/etc/ssl/certs/tls.key"
+            {{- end }}
           {{- with .Values.extraEnv }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
@@ -83,17 +102,32 @@ spec:
             - name: ldap
               containerPort: {{ .Values.service.ldap_port }}
               protocol: TCP
-          {{- if .Values.persistence.enabled }}
+            {{- if .Values.service.ldaps_enabled }}
+            - name: ldaps
+              containerPort: {{ .Values.service.ldaps_port }}
+              protocol: TCP
+            {{- end }}
           volumeMounts:
             - mountPath: /data
               name: lldap-data
-          {{- end }}
-      {{- if .Values.persistence.enabled }}
+            {{- if .Values.service.ldaps_enabled }}
+            - mountPath: /etc/ssl/certs
+              name: lldap-certs
+            {{- end }}
       volumes:
         - name: lldap-data
+          {{- if .Values.persistence.enabled }}
           persistentVolumeClaim:
             claimName: {{ include "lldap.persistenceName" . }}
-      {{- end }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        {{- if .Values.service.ldaps_enabled }}
+        - name: lldap-certs
+          secret:
+            secretName: {{ include "lldap.certsSecretName" . }}
+            defaultMode: 0644
+        {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

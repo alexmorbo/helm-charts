@@ -82,3 +82,10 @@ Create the name of the secret to use
 {{- define "lldap.secretName" -}}
 {{- printf "%s-secret" (include "lldap.fullname" .) }}
 {{- end }}
+
+{{/*
+Create the name of the tls secret to use
+*/}}
+{{- define "lldap.certsSecretName" -}}
+{{- printf "%s-tls" (include "lldap.fullname" .) }}
+{{- end }}
