@@ -5,7 +5,7 @@ image:
   repository: lldap/lldap
   pullPolicy: IfNotPresent
   # -- Overrides the image tag whose default is the chart appVersion.
-  tag: "2025-05-19-alpine"
+  tag: "2026-01-06-alpine"
   sha: ""
 
 imagePullSecrets: []
@@ -37,8 +37,12 @@ serviceAccount:
   name: ""
 
 secret:
+  # -- Specifies whether a secret should be created
   create: true
   annotations: {}
+  # -- Name of existing secret to use (if create is false)
+  # -- Secret must contain keys: lldap-jwt-secret, lldap-ldap-user-pass, base-dn
+  existingSecret: ""
   lldapJwtSecret: "wobY6RK/Dc0vL21zFiIZs9iyVy0NQ3ldijYPQ4HLWTc="
   # default user is admin
   lldapUserPass: "admiistrator123456"

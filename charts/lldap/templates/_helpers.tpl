@@ -80,7 +80,11 @@ Create the name of the pvc config to use
 Create the name of the secret to use
 */}}
 {{- define "lldap.secretName" -}}
+{{- if .Values.secret.existingSecret }}
+{{- .Values.secret.existingSecret }}
+{{- else }}
 {{- printf "%s-secret" (include "lldap.fullname" .) }}
+{{- end }}
 {{- end }}
 
 {{/*

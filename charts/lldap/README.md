@@ -1,7 +1,7 @@
 
 # lldap
 
-![Version: 1.0.7](https://img.shields.io/badge/Version-1.0.7-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.6.1](https://img.shields.io/badge/AppVersion-0.6.1-informational?style=flat-square)
+![Version: 1.0.8](https://img.shields.io/badge/Version-1.0.8-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.6.2](https://img.shields.io/badge/AppVersion-0.6.2-informational?style=flat-square)
 
 LLDAP helm chart for Kubernetes
 
@@ -44,7 +44,7 @@ helm install lldap oci://ghcr.io/alexmorbo/helm-charts/lldap
 | image.registry | string | `"ghcr.io"` |  |
 | image.repository | string | `"lldap/lldap"` |  |
 | image.sha | string | `""` |  |
-| image.tag | string | `"2025-05-19-alpine"` | Overrides the image tag whose default is the chart appVersion. |
+| image.tag | string | `"2026-01-06-alpine"` | Overrides the image tag whose default is the chart appVersion. |
 | imagePullSecrets | list | `[]` |  |
 | ingress.annotations | object | `{}` |  |
 | ingress.enabled | bool | `false` |  |
@@ -67,7 +67,8 @@ helm install lldap oci://ghcr.io/alexmorbo/helm-charts/lldap
 | replicaCount | int | `1` |  |
 | resources | object | `{}` |  |
 | secret.annotations | object | `{}` |  |
-| secret.create | bool | `true` |  |
+| secret.create | bool | `true` | Specifies whether a secret should be created |
+| secret.existingSecret | string | `""` | Secret must contain keys: lldap-jwt-secret, lldap-ldap-user-pass, base-dn |
 | secret.lldapBaseDn | string | `"dc=homelab,dc=local"` |  |
 | secret.lldapJwtSecret | string | `"wobY6RK/Dc0vL21zFiIZs9iyVy0NQ3ldijYPQ4HLWTc="` |  |
 | secret.lldapUserPass | string | `"admiistrator123456"` |  |
