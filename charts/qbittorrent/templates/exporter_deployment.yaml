@@ -50,10 +50,29 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           env:
-            - name: QBITTORRENT_HOST
-              value: "{{ include "qbittorrent.fullname" . }}-web"
-            - name: QBITTORRENT_PORT
-              value: "{{ .Values.qbittorrent.service.web.port }}"
+            - name: QBITTORRENT_BASE_URL
+              value: "{{ if .Values.qbittorrent.metrics.qbittorrent.baseUrl }}{{ .Values.qbittorrent.metrics.qbittorrent.baseUrl }}{{ else }}http://{{ include "qbittorrent.fullname" . }}-web:{{ .Values.qbittorrent.service.web.port }}{{ end }}"
+            {{- if .Values.qbittorrent.metrics.qbittorrent.existingSecret }}
+            - name: QBITTORRENT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.qbittorrent.metrics.qbittorrent.existingSecret }}
+                  key: QBITTORRENT_USERNAME
+            - name: QBITTORRENT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.qbittorrent.metrics.qbittorrent.existingSecret }}
+                  key: QBITTORRENT_PASSWORD
+            {{- else }}
+            {{- if .Values.qbittorrent.metrics.qbittorrent.username }}
+            - name: QBITTORRENT_USERNAME
+              value: "{{ .Values.qbittorrent.metrics.qbittorrent.username }}"
+            {{- end }}
+            {{- if .Values.qbittorrent.metrics.qbittorrent.password }}
+            - name: QBITTORRENT_PASSWORD
+              value: "{{ .Values.qbittorrent.metrics.qbittorrent.password }}"
+            {{- end }}
+            {{- end }}
             - name: EXPORTER_PORT
               value: "{{ .Values.qbittorrent.metrics.service.port }}"
           {{- with .Values.qbittorrent.metrics.resources }}

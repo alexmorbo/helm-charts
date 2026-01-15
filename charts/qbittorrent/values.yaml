@@ -154,10 +154,20 @@ qbittorrent:
     enabled: false
     image:
       registry: ghcr.io
-      repository: esanchezm/prometheus-qbittorrent-exporter
+      repository: martabal/qbittorrent-exporter
       pullPolicy: IfNotPresent
-      tag: "v1.6.0"
+      tag: "v1.13.2"
       sha: ""
+    # -- qBittorrent connection settings
+    qbittorrent:
+      # -- Base URL for qBittorrent (leave empty to auto-generate from service)
+      baseUrl: ""
+      # -- Username for qBittorrent
+      username: ""
+      # -- Password for qBittorrent
+      password: ""
+      # -- Existing secret name containing QBITTORRENT_USERNAME and QBITTORRENT_PASSWORD
+      existingSecret: ""
 
     imagePullSecrets: []
 

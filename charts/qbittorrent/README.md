@@ -1,7 +1,7 @@
 
 # qbittorrent
 
-![Version: 1.0.17](https://img.shields.io/badge/Version-1.0.17-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 4.6.6](https://img.shields.io/badge/AppVersion-4.6.6-informational?style=flat-square)
+![Version: 1.0.18](https://img.shields.io/badge/Version-1.0.18-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 4.6.6](https://img.shields.io/badge/AppVersion-4.6.6-informational?style=flat-square)
 
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/qbittorrent)](https://artifacthub.io/packages/search?repo=qbittorrent)
 
@@ -109,9 +109,9 @@ helm install qbittorrent oci://ghcr.io/alexmorbo/helm-charts/qbittorrent
 | qbittorrent.metrics.enabled | bool | `false` |  |
 | qbittorrent.metrics.image.pullPolicy | string | `"IfNotPresent"` |  |
 | qbittorrent.metrics.image.registry | string | `"ghcr.io"` |  |
-| qbittorrent.metrics.image.repository | string | `"esanchezm/prometheus-qbittorrent-exporter"` |  |
+| qbittorrent.metrics.image.repository | string | `"martabal/qbittorrent-exporter"` |  |
 | qbittorrent.metrics.image.sha | string | `""` |  |
-| qbittorrent.metrics.image.tag | string | `"v1.6.0"` |  |
+| qbittorrent.metrics.image.tag | string | `"v1.13.2"` |  |
 | qbittorrent.metrics.imagePullSecrets | list | `[]` |  |
 | qbittorrent.metrics.livenessProbe.failureThreshold | int | `4` |  |
 | qbittorrent.metrics.livenessProbe.httpGet.path | string | `"/"` |  |
@@ -126,6 +126,11 @@ helm install qbittorrent oci://ghcr.io/alexmorbo/helm-charts/qbittorrent
 | qbittorrent.metrics.podLabels | object | `{}` |  |
 | qbittorrent.metrics.podSecurityContext.fsGroup | int | `65534` |  |
 | qbittorrent.metrics.podSecurityContext.fsGroupChangePolicy | string | `"OnRootMismatch"` |  |
+| qbittorrent.metrics.qbittorrent | object | `{"baseUrl":"","existingSecret":"","password":"","username":""}` | qBittorrent connection settings |
+| qbittorrent.metrics.qbittorrent.baseUrl | string | `""` | Base URL for qBittorrent (leave empty to auto-generate from service) |
+| qbittorrent.metrics.qbittorrent.existingSecret | string | `""` | Existing secret name containing QBITTORRENT_USERNAME and QBITTORRENT_PASSWORD |
+| qbittorrent.metrics.qbittorrent.password | string | `""` | Password for qBittorrent |
+| qbittorrent.metrics.qbittorrent.username | string | `""` | Username for qBittorrent |
 | qbittorrent.metrics.readinessProbe.failureThreshold | int | `4` |  |
 | qbittorrent.metrics.readinessProbe.httpGet.path | string | `"/"` |  |
 | qbittorrent.metrics.readinessProbe.httpGet.port | int | `8000` |  |

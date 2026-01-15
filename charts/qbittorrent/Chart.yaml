@@ -3,7 +3,7 @@ kubeVersion: ">=1.23.0-0"
 name: qbittorrent
 description: qbittorrent helm chart for Kubernetes
 type: application
-version: 1.0.17
+version: 1.0.18
 appVersion: "4.6.6"
 maintainers:
   - name: AlexMorbo
@@ -30,6 +30,6 @@ annotations:
     - name: qbittorrent
       image: onedr0p/qbittorrent:4.6.6
     - name: exporter
-      image: esanchezm/prometheus-qbittorrent-exporter:v1.6.0
+      image: martabal/qbittorrent-exporter:v1.13.2
     - name: manage
       image: stuffanthings/qbit_manage:v4.1.15
