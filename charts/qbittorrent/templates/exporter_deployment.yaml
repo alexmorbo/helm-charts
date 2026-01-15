@@ -75,6 +75,13 @@ spec:
             {{- end }}
             - name: EXPORTER_PORT
               value: "{{ .Values.qbittorrent.metrics.service.port }}"
+            {{- with .Values.qbittorrent.metrics.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- with .Values.qbittorrent.metrics.extraEnvFrom }}
+          envFrom:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- with .Values.qbittorrent.metrics.resources }}
           resources:
             {{- toYaml . | nindent 12 }}

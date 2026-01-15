@@ -1,7 +1,7 @@
 
 # qbittorrent
 
-![Version: 1.0.18](https://img.shields.io/badge/Version-1.0.18-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 4.6.6](https://img.shields.io/badge/AppVersion-4.6.6-informational?style=flat-square)
+![Version: 1.0.19](https://img.shields.io/badge/Version-1.0.19-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 4.6.6](https://img.shields.io/badge/AppVersion-4.6.6-informational?style=flat-square)
 
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/qbittorrent)](https://artifacthub.io/packages/search?repo=qbittorrent)
 
@@ -107,6 +107,8 @@ helm install qbittorrent oci://ghcr.io/alexmorbo/helm-charts/qbittorrent
 | qbittorrent.ingress.tls | list | `[]` |  |
 | qbittorrent.metrics.affinity | object | `{}` |  |
 | qbittorrent.metrics.enabled | bool | `false` |  |
+| qbittorrent.metrics.extraEnv | list | `[]` | Extra environment variables for the exporter |
+| qbittorrent.metrics.extraEnvFrom | list | `[]` | Extra environment variables from secrets or configmaps |
 | qbittorrent.metrics.image.pullPolicy | string | `"IfNotPresent"` |  |
 | qbittorrent.metrics.image.registry | string | `"ghcr.io"` |  |
 | qbittorrent.metrics.image.repository | string | `"martabal/qbittorrent-exporter"` |  |

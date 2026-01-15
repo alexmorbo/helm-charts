@@ -168,6 +168,10 @@ qbittorrent:
       password: ""
       # -- Existing secret name containing QBITTORRENT_USERNAME and QBITTORRENT_PASSWORD
       existingSecret: ""
+    # -- Extra environment variables for the exporter
+    extraEnv: []
+    # -- Extra environment variables from secrets or configmaps
+    extraEnvFrom: []
 
     imagePullSecrets: []
 
