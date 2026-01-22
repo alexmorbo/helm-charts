@@ -1,0 +1,24 @@
+{{- if and .Values.monitoring.enabled .Values.flower.enabled }}
+apiVersion: {{ eq .Values.monitoring.type "VMServiceScrape" | ternary "operator.victoriametrics.com/v1beta1" "monitoring.coreos.com/v1" }}
+kind: {{ .Values.monitoring.type }}
+metadata:
+  name: {{ include "paperless-ngx.fullname" . }}
+  namespace: {{ .Values.monitoring.namespace | default .Release.Namespace }}
+  labels:
+    {{- include "paperless-ngx.labels" . | nindent 4 }}
+    {{- with .Values.monitoring.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "paperless-ngx.selectorLabels" . | nindent 6 }}
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  endpoints:
+    - port: metrics
+      path: {{ .Values.monitoring.path }}
+      interval: {{ .Values.monitoring.interval }}
+      scrapeTimeout: {{ .Values.monitoring.scrapeTimeout }}
+{{- end }}

@@ -1,0 +1,37 @@
+apiVersion: v2
+kubeVersion: ">=1.23.0-0"
+name: paperless-ngx
+description: Paperless-ngx helm chart for Kubernetes - Document management system
+type: application
+version: 0.1.0
+appVersion: "2.20.5"
+maintainers:
+  - name: AlexMorbo
+    email: alex@morbo.ru
+sources:
+  - https://github.com/alexmorbo/helm-charts/tree/master/charts/paperless-ngx
+icon: https://raw.githubusercontent.com/alexmorbo/helm-charts/refs/heads/master/docs/assets/logo.svg
+home: https://github.com/alexmorbo/helm-charts
+keywords:
+  - paperless
+  - paperless-ngx
+  - documents
+  - ocr
+  - dms
+  - document-management
+annotations:
+  artifacthub.io/license: MIT
+  artifacthub.io/links: |-
+    - name: App Source
+      url: https://github.com/paperless-ngx/paperless-ngx
+    - name: Chart Source
+      url: https://github.com/alexmorbo/helm-charts/tree/master/charts/paperless-ngx
+  artifacthub.io/images: |
+    - name: paperless-ngx
+      image: ghcr.io/paperless-ngx/paperless-ngx:2.20.5
+
+dependencies:
+  - name: valkey
+    version: "0.x.x"
+    repository: https://valkey.io/valkey-helm/
+    condition: app.valkey.enabled

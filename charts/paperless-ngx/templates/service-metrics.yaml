@@ -1,0 +1,18 @@
+{{- if .Values.flower.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "paperless-ngx.fullname" . }}-metrics
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "paperless-ngx.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.flower.port }}
+      targetPort: metrics
+      protocol: TCP
+      name: metrics
+  selector:
+    {{- include "paperless-ngx.selectorLabels" . | nindent 4 }}
+{{- end }}

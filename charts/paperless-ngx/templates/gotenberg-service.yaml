@@ -1,0 +1,21 @@
+{{- if .Values.gotenberg.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "paperless-ngx.fullname" . }}-gotenberg
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "paperless-ngx.labels" . | nindent 4 }}
+    app.kubernetes.io/component: gotenberg
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.gotenberg.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: {{ include "paperless-ngx.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: gotenberg
+{{- end }}

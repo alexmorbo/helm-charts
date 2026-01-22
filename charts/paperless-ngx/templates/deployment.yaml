@@ -1,0 +1,271 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "paperless-ngx.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "paperless-ngx.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  strategy:
+    {{- include "paperless-ngx.strategy" (dict "local" .Values.strategy "global" .Values.global.strategy) | nindent 4 }}
+  selector:
+    matchLabels:
+      {{- include "paperless-ngx.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "paperless-ngx.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "paperless-ngx.serviceAccountName" . }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.extraInitContainers }}
+      initContainers:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: {{ include "paperless-ngx.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+            {{- if .Values.flower.enabled }}
+            - name: metrics
+              containerPort: {{ .Values.flower.port }}
+              protocol: TCP
+            {{- end }}
+          env:
+            # URL configuration
+            {{- $appUrl := .Values.app.url }}
+            {{- if and (not $appUrl) .Values.ingress.enabled (gt (len .Values.ingress.hosts) 0) }}
+            {{- $appUrl = printf "https://%s" (index .Values.ingress.hosts 0).host }}
+            {{- else if and (not $appUrl) .Values.route.enabled (gt (len .Values.route.hostnames) 0) }}
+            {{- $appUrl = printf "https://%s" (index .Values.route.hostnames 0) }}
+            {{- end }}
+            {{- if $appUrl }}
+            - name: PAPERLESS_URL
+              value: {{ $appUrl | quote }}
+            - name: PAPERLESS_CSRF_TRUSTED_ORIGINS
+              value: {{ .Values.app.csrfTrustedOrigins | default $appUrl | quote }}
+            {{- end }}
+            # Database configuration
+            {{- if .Values.app.database.host }}
+            - name: PAPERLESS_DBENGINE
+              value: "postgresql"
+            - name: PAPERLESS_DBHOST
+              value: {{ .Values.app.database.host | quote }}
+            - name: PAPERLESS_DBPORT
+              value: {{ .Values.app.database.port | quote }}
+            - name: PAPERLESS_DBNAME
+              value: {{ .Values.app.database.name | quote }}
+            - name: PAPERLESS_DBUSER
+              value: {{ .Values.app.database.user | quote }}
+            - name: PAPERLESS_DBSSLMODE
+              value: {{ .Values.app.database.sslmode | quote }}
+            - name: PAPERLESS_DBPASS
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.app.database.existingSecret }}
+                  name: {{ .Values.app.database.existingSecret }}
+                  key: {{ .Values.app.database.existingSecretKey }}
+                  {{- else }}
+                  name: {{ include "paperless-ngx.fullname" . }}
+                  key: db-password
+                  {{- end }}
+            {{- end }}
+            # Redis configuration
+            {{- if .Values.app.valkey.enabled }}
+            - name: PAPERLESS_REDIS
+              value: "redis://{{ include "paperless-ngx.fullname" . }}-valkey:6379"
+            {{- else if or .Values.app.valkeyExternal.url .Values.app.valkeyExternal.existingSecret }}
+            - name: PAPERLESS_REDIS
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.app.valkeyExternal.existingSecret }}
+                  name: {{ .Values.app.valkeyExternal.existingSecret }}
+                  key: {{ .Values.app.valkeyExternal.existingSecretKey }}
+                  {{- else }}
+                  name: {{ include "paperless-ngx.fullname" . }}
+                  key: valkey-url
+                  {{- end }}
+            {{- end }}
+            {{- if .Values.app.valkey.prefix }}
+            - name: PAPERLESS_REDIS_PREFIX
+              value: {{ .Values.app.valkey.prefix | quote }}
+            {{- end }}
+            # Flower
+            {{- if .Values.flower.enabled }}
+            - name: PAPERLESS_ENABLE_FLOWER
+              value: "true"
+            {{- end }}
+            # Tika & Gotenberg
+            {{- if .Values.tika.enabled }}
+            - name: PAPERLESS_TIKA_ENABLED
+              value: "true"
+            - name: PAPERLESS_TIKA_ENDPOINT
+              value: "http://{{ include "paperless-ngx.fullname" . }}-tika:{{ .Values.tika.port }}"
+            {{- end }}
+            {{- if .Values.gotenberg.enabled }}
+            - name: PAPERLESS_TIKA_GOTENBERG_ENDPOINT
+              value: "http://{{ include "paperless-ngx.fullname" . }}-gotenberg:{{ .Values.gotenberg.port }}"
+            {{- end }}
+            # OIDC configuration
+            {{- if .Values.app.oidc.enabled }}
+            - name: OIDC_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.app.oidc.existingSecret }}
+                  name: {{ .Values.app.oidc.existingSecret }}
+                  key: {{ .Values.app.oidc.clientIdKey }}
+                  {{- else }}
+                  name: {{ include "paperless-ngx.fullname" . }}
+                  key: oidc-client-id
+                  {{- end }}
+            - name: OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.app.oidc.existingSecret }}
+                  name: {{ .Values.app.oidc.existingSecret }}
+                  key: {{ .Values.app.oidc.clientSecretKey }}
+                  {{- else }}
+                  name: {{ include "paperless-ngx.fullname" . }}
+                  key: oidc-client-secret
+                  {{- end }}
+            - name: PAPERLESS_APPS
+              value: "allauth.socialaccount.providers.openid_connect"
+            - name: PAPERLESS_SOCIALACCOUNT_PROVIDERS
+              value: >-
+                {"openid_connect":{"APPS":[{"provider_id":"{{ .Values.app.oidc.providerId }}","name":"{{ .Values.app.oidc.displayName }}","client_id":"$(OIDC_CLIENT_ID)","secret":"$(OIDC_CLIENT_SECRET)","settings":{"server_url":"{{ .Values.app.oidc.serverUrl }}"}}]}}
+            {{- if .Values.app.oidc.disableRegularLogin }}
+            - name: PAPERLESS_DISABLE_REGULAR_LOGIN
+              value: "true"
+            {{- end }}
+            {{- if .Values.app.oidc.redirectLoginToSSO }}
+            - name: PAPERLESS_REDIRECT_LOGIN_TO_SSO
+              value: "true"
+            {{- end }}
+            {{- end }}
+            # App configuration
+            {{- if .Values.app.ocrLanguages }}
+            {{- $nonEngLangs := list }}
+            {{- range .Values.app.ocrLanguages }}
+            {{- if ne . "eng" }}
+            {{- $nonEngLangs = append $nonEngLangs . }}
+            {{- end }}
+            {{- end }}
+            {{- if $nonEngLangs }}
+            - name: PAPERLESS_OCR_LANGUAGES
+              value: {{ join " " $nonEngLangs | quote }}
+            {{- end }}
+            - name: PAPERLESS_OCR_LANGUAGE
+              value: {{ join "+" .Values.app.ocrLanguages | quote }}
+            {{- end }}
+            {{- if .Values.app.ocrMode }}
+            - name: PAPERLESS_OCR_MODE
+              value: {{ .Values.app.ocrMode | quote }}
+            {{- end }}
+            {{- if .Values.app.dateOrder }}
+            - name: PAPERLESS_DATE_ORDER
+              value: {{ .Values.app.dateOrder | quote }}
+            {{- end }}
+            {{- if .Values.app.timeZone }}
+            - name: PAPERLESS_TIME_ZONE
+              value: {{ .Values.app.timeZone | quote }}
+            {{- end }}
+            {{- if .Values.app.filenameFormat }}
+            - name: PAPERLESS_FILENAME_FORMAT
+              value: {{ .Values.app.filenameFormat | quote }}
+            - name: PAPERLESS_FILENAME_FORMAT_REMOVE_NONE
+              value: {{ .Values.app.filenameFormatRemoveNone | quote }}
+            {{- end }}
+            {{- if gt (int .Values.app.taskWorkers) 1 }}
+            - name: PAPERLESS_TASK_WORKERS
+              value: {{ .Values.app.taskWorkers | quote }}
+            {{- end }}
+            {{- if gt (int .Values.app.threadsPerWorker) 1 }}
+            - name: PAPERLESS_THREADS_PER_WORKER
+              value: {{ .Values.app.threadsPerWorker | quote }}
+            {{- end }}
+            # Extra env
+            {{- with .Values.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- with .Values.extraEnvFrom }}
+          envFrom:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            {{- if .Values.persistence.enabled }}
+            - name: storage
+              mountPath: /usr/src/paperless/data
+              subPath: data
+            - name: storage
+              mountPath: /usr/src/paperless/media
+              subPath: media
+            - name: storage
+              mountPath: /usr/src/paperless/consume
+              subPath: consume
+            - name: storage
+              mountPath: /usr/src/paperless/export
+              subPath: export
+            {{- end }}
+            {{- with .Values.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- with .Values.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        {{- if .Values.persistence.enabled }}
+        - name: storage
+          persistentVolumeClaim:
+            claimName: {{ include "paperless-ngx.pvcName" . }}
+        {{- end }}
+        {{- with .Values.volumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

@@ -1,0 +1,15 @@
+Paperless-ngx has been deployed.
+
+Release: {{ .Release.Name }}
+Namespace: {{ .Release.Namespace }}
+
+{{- if .Values.ingress.enabled }}
+Access Paperless-ngx at:
+{{- range $host := .Values.ingress.hosts }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}
+{{- end }}
+{{- else }}
+To access Paperless-ngx, run:
+  kubectl port-forward svc/{{ include "paperless-ngx.fullname" . }} 8000:{{ .Values.service.port }} -n {{ .Release.Namespace }}
+Then open http://localhost:8000
+{{- end }}

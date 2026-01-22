@@ -1,0 +1,336 @@
+# ==============================================================================
+# Global configuration
+# ==============================================================================
+global:
+  # -- Global image registry (used as fallback for all components)
+  imageRegistry: ""
+  # -- Global deployment strategy (used as fallback for all components)
+  strategy:
+    type: Recreate
+
+# ==============================================================================
+# Main paperless-ngx configuration
+# ==============================================================================
+image:
+  # -- Image registry (falls back to global.imageRegistry, then to ghcr.io)
+  registry: ""
+  repository: paperless-ngx/paperless-ngx
+  pullPolicy: IfNotPresent
+  # -- Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+# -- Deployment strategy (falls back to global.strategy)
+strategy: {}
+
+# -- Additional init containers
+extraInitContainers: []
+
+# -- Environment variables to add to the pods
+extraEnv: []
+# -- Environment variables from secrets or configmaps to add to the pods
+extraEnvFrom: []
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  fsGroup: 1000
+  fsGroupChangePolicy: OnRootMismatch
+
+securityContext: {}
+
+service:
+  type: ClusterIP
+  port: 8000
+  annotations: {}
+
+ingress:
+  enabled: false
+  ingressClassName: ""
+  annotations: {}
+  hosts:
+    - host: paperless.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+# -- Gateway API HTTPRoute
+route:
+  enabled: false
+  parentRefs:
+    - name: gateway
+      namespace: gateway-system
+  hostnames:
+    - paperless.local
+  annotations: {}
+  labels: {}
+
+# -- Persistence configuration (single PVC with subPaths)
+persistence:
+  enabled: true
+  size: 20Gi
+  storageClass: ""
+  accessModes:
+    - ReadWriteOnce
+  existingClaim: ""
+  annotations: {}
+
+resources: {}
+
+volumes: []
+volumeMounts: []
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+startupProbe:
+  httpGet:
+    path: /
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 30
+
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+# -- Flower (Celery monitoring)
+flower:
+  enabled: false
+  port: 5555
+  ingress:
+    enabled: false
+    ingressClassName: ""
+    annotations: {}
+    hosts:
+      - host: flower.local
+        paths:
+          - path: /
+            pathType: Prefix
+    tls: []
+  route:
+    enabled: false
+    parentRefs:
+      - name: gateway
+        namespace: gateway-system
+    hostnames:
+      - flower.local
+    annotations: {}
+    labels: {}
+
+# -- Tika server for advanced document parsing
+tika:
+  enabled: false
+  image:
+    # -- Registry (falls back to global.imageRegistry)
+    registry: ""
+    repository: apache/tika
+    tag: "3.2.3.0"
+    pullPolicy: IfNotPresent
+  port: 9998
+  # -- Strategy (falls back to global.strategy)
+  strategy: {}
+  resources: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+# -- Gotenberg for document conversion
+gotenberg:
+  enabled: false
+  image:
+    # -- Registry (falls back to global.imageRegistry)
+    registry: ""
+    repository: gotenberg/gotenberg
+    tag: "8.25.1"
+    pullPolicy: IfNotPresent
+  port: 3000
+  # -- Strategy (falls back to global.strategy)
+  strategy: {}
+  resources: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+# -- Monitoring configuration
+monitoring:
+  enabled: false
+  type: ServiceMonitor
+  path: /metrics
+  interval: 30s
+  scrapeTimeout: 10s
+  labels: {}
+  namespace: ""
+
+# ==============================================================================
+# Application configuration
+# ==============================================================================
+app:
+  # -- Public URL of paperless-ngx (e.g., https://paperless.example.com)
+  url: ""
+  # -- CSRF trusted origins (comma-separated, defaults to app.url if set)
+  csrfTrustedOrigins: ""
+
+  # -- OCR languages to install and use (e.g., ["rus", "eng", "deu"])
+  # First language is primary. English is always included.
+  ocrLanguages: []
+
+  # -- OCR mode: skip (default), redo, force
+  ocrMode: "skip"
+
+  # -- Date order for parsing: DMY, MDY, YMD
+  dateOrder: "DMY"
+
+  # -- Timezone (e.g., Europe/Moscow, UTC)
+  timeZone: ""
+
+  # -- Filename format template
+  filenameFormat: ""
+  # -- Remove 'none' placeholders from filename
+  filenameFormatRemoveNone: true
+
+  # -- Number of task workers
+  taskWorkers: 1
+  # -- Threads per worker
+  threadsPerWorker: 1
+
+  # -- Built-in Valkey (Redis)
+  valkey:
+    enabled: true
+    # -- Prefix for Redis keys
+    prefix: ""
+
+  # -- External Valkey/Redis (when app.valkey.enabled=false)
+  valkeyExternal:
+    url: ""
+    existingSecret: ""
+    existingSecretKey: "url"
+
+  # -- Database configuration
+  database:
+    host: ""
+    port: 5432
+    name: "paperless"
+    user: "paperless"
+    sslmode: "prefer"
+    existingSecret: ""
+    existingSecretKey: "password"
+    password: ""
+
+  # -- OIDC/SSO configuration
+  oidc:
+    enabled: false
+    providerId: "keycloak"
+    displayName: "SSO Login"
+    serverUrl: ""
+    existingSecret: ""
+    clientIdKey: "client-id"
+    clientSecretKey: "client-secret"
+    clientId: ""
+    clientSecret: ""
+    disableRegularLogin: false
+    redirectLoginToSSO: false
+
+# ==============================================================================
+# Paperless-AI configuration
+# https://github.com/clusterzx/paperless-ai
+# ==============================================================================
+paperlessAi:
+  enabled: false
+  image:
+    # -- Registry (falls back to global.imageRegistry)
+    registry: ""
+    repository: clusterzx/paperless-ai
+    tag: "3.0.9"
+    pullPolicy: IfNotPresent
+
+  # -- Strategy (falls back to global.strategy)
+  strategy: {}
+
+  # AI Provider: openai, ollama, custom
+  provider: "openai"
+
+  # OpenAI settings
+  openai:
+    model: "gpt-4o-mini"
+    existingSecret: ""
+    secretKey: "api-key"
+    apiKey: ""
+
+  # Ollama settings
+  ollama:
+    url: "http://ollama:11434"
+    model: "llama3.2"
+
+  # Custom provider settings
+  custom:
+    url: ""
+    model: ""
+    existingSecret: ""
+    secretKey: "api-key"
+    apiKey: ""
+
+  # Paperless-ngx connection
+  paperless:
+    # API token - create in Paperless UI: Settings -> API Tokens
+    existingSecret: ""
+    secretKey: "api-token"
+    apiToken: ""
+
+  # Processing settings
+  scanInterval: "*/30 * * * *"
+  addProcessedTag: true
+  processedTagName: "ai-processed"
+  processExistingDocuments: false
+
+  # Persistence for /app/data
+  persistence:
+    enabled: true
+    size: 1Gi
+    storageClass: ""
+    existingClaim: ""
+
+  # Ingress for web UI
+  ingress:
+    enabled: false
+    ingressClassName: ""
+    annotations: {}
+    host: paperless-ai.local
+    tls: []
+
+  resources: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+# ==============================================================================
+# Valkey subchart configuration
+# See https://github.com/valkey-io/valkey-helm for all options
+# ==============================================================================
+valkey: {}

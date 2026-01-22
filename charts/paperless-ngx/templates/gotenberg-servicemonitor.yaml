@@ -1,0 +1,27 @@
+{{- if and .Values.gotenberg.enabled .Values.monitoring.enabled }}
+apiVersion: {{ eq .Values.monitoring.type "VMServiceScrape" | ternary "operator.victoriametrics.com/v1beta1" "monitoring.coreos.com/v1" }}
+kind: {{ .Values.monitoring.type }}
+metadata:
+  name: {{ include "paperless-ngx.fullname" . }}-gotenberg
+  namespace: {{ .Values.monitoring.namespace | default .Release.Namespace }}
+  labels:
+    {{- include "paperless-ngx.labels" . | nindent 4 }}
+    app.kubernetes.io/component: gotenberg
+    {{- with .Values.monitoring.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "paperless-ngx.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: gotenberg
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  endpoints:
+    - port: http
+      path: /prometheus/metrics
+      interval: {{ .Values.monitoring.interval }}
+      scrapeTimeout: {{ .Values.monitoring.scrapeTimeout }}
+{{- end }}

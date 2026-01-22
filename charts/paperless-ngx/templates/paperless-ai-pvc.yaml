@@ -1,0 +1,19 @@
+{{- if and .Values.paperlessAi.enabled .Values.paperlessAi.persistence.enabled (not .Values.paperlessAi.persistence.existingClaim) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "paperless-ngx.fullname" . }}-ai
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "paperless-ngx.labels" . | nindent 4 }}
+    app.kubernetes.io/component: ai
+spec:
+  accessModes:
+    - ReadWriteOnce
+  {{- if .Values.paperlessAi.persistence.storageClass }}
+  storageClassName: {{ .Values.paperlessAi.persistence.storageClass | quote }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.paperlessAi.persistence.size }}
+{{- end }}

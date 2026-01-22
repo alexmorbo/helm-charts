@@ -1,0 +1,136 @@
+{{- if .Values.paperlessAi.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "paperless-ngx.fullname" . }}-ai
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "paperless-ngx.labels" . | nindent 4 }}
+    app.kubernetes.io/component: ai
+spec:
+  replicas: 1
+  strategy:
+    {{- include "paperless-ngx.strategy" (dict "local" .Values.paperlessAi.strategy "global" .Values.global.strategy) | nindent 4 }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "paperless-ngx.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: ai
+  template:
+    metadata:
+      labels:
+        {{- include "paperless-ngx.labels" . | nindent 8 }}
+        app.kubernetes.io/component: ai
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: paperless-ai
+          image: {{ include "paperless-ngx.imageRegistry" (dict "local" .Values.paperlessAi.image.registry "global" .Values.global.imageRegistry "default" "docker.io") }}/{{ .Values.paperlessAi.image.repository }}:{{ .Values.paperlessAi.image.tag }}
+          imagePullPolicy: {{ .Values.paperlessAi.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          env:
+            # Paperless-ngx connection
+            - name: PAPERLESS_API_URL
+              value: "http://{{ include "paperless-ngx.fullname" . }}:{{ .Values.service.port }}/api"
+            - name: PAPERLESS_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.paperlessAi.paperless.existingSecret }}
+                  name: {{ .Values.paperlessAi.paperless.existingSecret }}
+                  key: {{ .Values.paperlessAi.paperless.secretKey }}
+                  {{- else }}
+                  name: {{ include "paperless-ngx.fullname" . }}-ai
+                  key: paperless-token
+                  {{- end }}
+            # AI Provider
+            - name: AI_PROVIDER
+              value: {{ .Values.paperlessAi.provider | quote }}
+            {{- if eq .Values.paperlessAi.provider "openai" }}
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.paperlessAi.openai.existingSecret }}
+                  name: {{ .Values.paperlessAi.openai.existingSecret }}
+                  key: {{ .Values.paperlessAi.openai.secretKey }}
+                  {{- else }}
+                  name: {{ include "paperless-ngx.fullname" . }}-ai
+                  key: openai-key
+                  {{- end }}
+            - name: OPENAI_MODEL
+              value: {{ .Values.paperlessAi.openai.model | quote }}
+            {{- else if eq .Values.paperlessAi.provider "ollama" }}
+            - name: OLLAMA_API_URL
+              value: {{ .Values.paperlessAi.ollama.url | quote }}
+            - name: OLLAMA_MODEL
+              value: {{ .Values.paperlessAi.ollama.model | quote }}
+            {{- else if eq .Values.paperlessAi.provider "custom" }}
+            - name: CUSTOM_BASE_URL
+              value: {{ .Values.paperlessAi.custom.url | quote }}
+            - name: CUSTOM_MODEL
+              value: {{ .Values.paperlessAi.custom.model | quote }}
+            - name: CUSTOM_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.paperlessAi.custom.existingSecret }}
+                  name: {{ .Values.paperlessAi.custom.existingSecret }}
+                  key: {{ .Values.paperlessAi.custom.secretKey }}
+                  {{- else }}
+                  name: {{ include "paperless-ngx.fullname" . }}-ai
+                  key: custom-key
+                  {{- end }}
+            {{- end }}
+            # Processing settings
+            - name: SCAN_INTERVAL
+              value: {{ .Values.paperlessAi.scanInterval | quote }}
+            - name: ADD_AI_PROCESSED_TAG
+              value: {{ .Values.paperlessAi.addProcessedTag | quote }}
+            - name: AI_PROCESSED_TAG_NAME
+              value: {{ .Values.paperlessAi.processedTagName | quote }}
+            - name: PROCESS_PREDEFINED_DOCUMENTS
+              value: {{ .Values.paperlessAi.processExistingDocuments | quote }}
+          volumeMounts:
+            {{- if .Values.paperlessAi.persistence.enabled }}
+            - name: data
+              mountPath: /app/data
+            {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          {{- with .Values.paperlessAi.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        {{- if .Values.paperlessAi.persistence.enabled }}
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ .Values.paperlessAi.persistence.existingClaim | default (printf "%s-ai" (include "paperless-ngx.fullname" .)) }}
+        {{- end }}
+      {{- with .Values.paperlessAi.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.paperlessAi.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.paperlessAi.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}
