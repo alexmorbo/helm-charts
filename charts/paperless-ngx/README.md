@@ -1,11 +1,208 @@
 
 # paperless-ngx
 
-![Version: 0.1.1](https://img.shields.io/badge/Version-0.1.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.20.5](https://img.shields.io/badge/AppVersion-2.20.5-informational?style=flat-square)
+![Version: 0.1.2](https://img.shields.io/badge/Version-0.1.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.20.5](https://img.shields.io/badge/AppVersion-2.20.5-informational?style=flat-square)
 
 Paperless-ngx helm chart for Kubernetes - Document management system
 
 **Homepage:** <https://github.com/alexmorbo/helm-charts>
+
+## Features
+
+- **Paperless-ngx** - Core document management system with OCR
+- **Tika** - Advanced document parsing (PDF, Office documents)
+- **Gotenberg** - Document conversion (HTML to PDF, Office to PDF)
+- **Paperless-AI** - AI-powered document tagging and classification
+- **Valkey** - Built-in Redis-compatible cache (optional)
+- **Flower** - Celery task monitoring UI
+- **Prometheus Monitoring** - Exporters for Paperless and Valkey metrics
+- **OIDC/SSO** - Single sign-on integration (Keycloak, etc.)
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              Ingress / Gateway API                           │
+└─────────────────────────────────────────────────────────────────────────────┘
+                    │                                    │
+                    ▼                                    ▼
+┌─────────────────────────────────┐    ┌─────────────────────────────────────┐
+│         Paperless-ngx           │    │           Paperless-AI              │
+│  ┌───────────┐ ┌─────────────┐  │    │  - AI tagging (OpenAI/Ollama)       │
+│  │  Web UI   │ │  REST API   │  │    │  - Document classification          │
+│  └───────────┘ └─────────────┘  │    │  - Chat with documents              │
+│  ┌───────────┐ ┌─────────────┐  │    └─────────────────────────────────────┘
+│  │  Celery   │ │   Flower    │  │
+│  │  Workers  │ │  (optional) │  │
+│  └───────────┘ └─────────────┘  │
+└─────────────────────────────────┘
+         │              │
+         ▼              ▼
+┌─────────────┐  ┌─────────────┐  ┌─────────────┐
+│    Tika     │  │  Gotenberg  │  │   Valkey    │
+│  (optional) │  │  (optional) │  │  (optional) │
+└─────────────┘  └─────────────┘  └─────────────┘
+         │
+         ▼
+┌─────────────────────────────────┐
+│     External PostgreSQL DB      │
+└─────────────────────────────────┘
+```
+
+## Components
+
+### Core Components
+
+| Component | Description | Default |
+|-----------|-------------|---------|
+| **Paperless-ngx** | Document management system with OCR | Enabled |
+| **Valkey** | Redis-compatible in-memory cache | Enabled |
+
+### Optional Components
+
+| Component | Description | Enable with |
+|-----------|-------------|-------------|
+| **Tika** | Apache Tika for advanced document parsing | `tika.enabled=true` |
+| **Gotenberg** | Document conversion service | `gotenberg.enabled=true` |
+| **Paperless-AI** | AI-powered document processing | `paperlessAi.enabled=true` |
+| **Flower** | Celery monitoring UI | `flower.enabled=true` |
+
+### Monitoring Stack
+
+| Component | Description | Enable with |
+|-----------|-------------|-------------|
+| **Paperless Exporter** | Prometheus metrics for Paperless-ngx | `monitoring.enabled=true` |
+| **Valkey Exporter** | Prometheus metrics for Valkey/Redis | `monitoring.enabled=true` |
+| **ServiceMonitor/VMServiceScrape** | Auto-discovery for Prometheus/VictoriaMetrics | `monitoring.enabled=true` |
+
+## Install
+
+```console
+helm install paperless-ngx oci://ghcr.io/alexmorbo/helm-charts/paperless-ngx
+```
+
+## Quick Start
+
+### Minimal Installation
+
+```yaml
+# values.yaml
+app:
+  url: "https://paperless.example.com"
+  database:
+    host: "postgres.example.com"
+    existingSecret: "paperless-db-secret"
+
+ingress:
+  enabled: true
+  hosts:
+    - host: paperless.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+```
+
+### Full Installation with All Features
+
+```yaml
+# values.yaml
+global:
+  imageRegistry: "my-registry.example.com"  # Optional: private registry
+
+app:
+  url: "https://paperless.example.com"
+  timeZone: "Europe/Moscow"
+  ocrLanguages: ["rus", "eng", "deu"]
+  database:
+    host: "postgres.example.com"
+    existingSecret: "paperless-db-secret"
+  oidc:
+    enabled: true
+    serverUrl: "https://keycloak.example.com/realms/main"
+    existingSecret: "paperless-oidc-secret"
+
+tika:
+  enabled: true
+
+gotenberg:
+  enabled: true
+
+paperlessAi:
+  enabled: true
+  provider: "openai"
+  openai:
+    existingSecret: "openai-secret"
+
+monitoring:
+  enabled: true
+  type: VMServiceScrape  # or ServiceMonitor for Prometheus
+
+ingress:
+  enabled: true
+  ingressClassName: nginx
+  hosts:
+    - host: paperless.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: paperless-tls
+      hosts:
+        - paperless.example.com
+```
+
+## Monitoring
+
+When `monitoring.enabled=true`, the chart automatically:
+
+1. Creates a `monitoring` user in Paperless-ngx with view permissions
+2. Generates an API token stored in `<release>-monitoring-api-token` secret
+3. Deploys Paperless exporter (port 8081)
+4. Deploys Valkey exporter (port 9121) if Valkey is enabled
+5. Creates ServiceMonitor/VMServiceScrape resources
+
+### Available Metrics
+
+**Paperless Exporter:**
+- `paperless_documents_total` - Total documents count
+- `paperless_documents_inbox` - Documents in inbox
+- `paperless_task_*` - Task/job statistics
+- `paperless_correspondent_*` - Correspondent statistics
+- `paperless_tag_*` - Tag statistics
+
+**Valkey Exporter:**
+- Standard Redis metrics (`redis_*`)
+- Memory, connections, commands statistics
+
+### Custom Token
+
+To use an existing API token instead of auto-generated:
+
+```yaml
+monitoring:
+  enabled: true
+  paperlessExporter:
+    existingSecret: "my-paperless-token"
+    secretKey: "token"
+```
+
+## Image Registry
+
+All components support `global.imageRegistry` for private registries:
+
+```yaml
+global:
+  imageRegistry: "my-registry.example.com"
+```
+
+This affects:
+- Paperless-ngx (`ghcr.io/paperless-ngx/paperless-ngx`)
+- Tika (`docker.io/apache/tika`)
+- Gotenberg (`docker.io/gotenberg/gotenberg`)
+- Paperless-AI (`docker.io/clusterzx/paperless-ai`)
+- Paperless Exporter (`ghcr.io/hansmi/prometheus-paperless-exporter`)
+- Valkey Exporter (`docker.io/oliver006/redis_exporter`)
+- kubectl (`docker.io/alpine/kubectl`)
 
 ## Maintainers
 
@@ -159,6 +356,3 @@ Kubernetes: `>=1.23.0-0`
 | valkey | object | `{}` |  |
 | volumeMounts | list | `[]` |  |
 | volumes | list | `[]` |  |
-
-----------------------------------------------
-Autogenerated from chart metadata using [helm-docs v1.14.2](https://github.com/norwoodj/helm-docs/releases/v1.14.2)
