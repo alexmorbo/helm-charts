@@ -1,0 +1,31 @@
+apiVersion: v2
+kubeVersion: ">=1.23.0-0"
+name: lidarr
+description: Lidarr helm chart for Kubernetes - Music collection manager for Usenet and BitTorrent users
+type: application
+version: 0.1.0
+appVersion: "3.1.2.4902"
+maintainers:
+  - name: AlexMorbo
+    email: alex@morbo.ru
+sources:
+  - https://github.com/alexmorbo/helm-charts/tree/master/charts/lidarr
+icon: https://raw.githubusercontent.com/Lidarr/Lidarr/develop/Logo/128.png
+home: https://github.com/alexmorbo/helm-charts
+keywords:
+  - lidarr
+  - music
+  - servarr
+  - usenet
+  - bittorrent
+  - media
+annotations:
+  artifacthub.io/license: MIT
+  artifacthub.io/links: |-
+    - name: App Source
+      url: https://github.com/Lidarr/Lidarr
+    - name: Chart Source
+      url: https://github.com/alexmorbo/helm-charts/tree/master/charts/lidarr
+  artifacthub.io/images: |
+    - name: lidarr
+      image: ghcr.io/home-operations/lidarr:3.1.2.4902

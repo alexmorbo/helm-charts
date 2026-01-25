@@ -1,0 +1,168 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "lidarr.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "lidarr.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  strategy:
+    {{- include "lidarr.strategy" (dict "local" .Values.strategy "global" .Values.global.strategy) | nindent 4 }}
+  selector:
+    matchLabels:
+      {{- include "lidarr.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "lidarr.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "lidarr.serviceAccountName" . }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: {{ include "lidarr.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8686
+              protocol: TCP
+          env:
+            # Timezone
+            - name: TZ
+              value: {{ .Values.app.timezone | quote }}
+            # Instance name
+            - name: LIDARR__APP__INSTANCENAME
+              value: {{ .Values.app.instanceName | quote }}
+            # Authentication
+            - name: LIDARR__AUTH__METHOD
+              value: {{ .Values.app.auth.method | quote }}
+            - name: LIDARR__AUTH__REQUIRED
+              value: {{ .Values.app.auth.required | quote }}
+            # API Key
+            - name: LIDARR__AUTH__APIKEY
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.app.auth.existingSecret }}
+                  name: {{ .Values.app.auth.existingSecret }}
+                  key: {{ .Values.app.auth.apiKeyKey }}
+                  {{- else }}
+                  name: {{ include "lidarr.secretName" . }}
+                  key: api-key
+                  {{- end }}
+            # Logging
+            - name: LIDARR__LOG__LEVEL
+              value: {{ .Values.app.logLevel | quote }}
+            - name: LIDARR__LOG__ANALYTICSENABLED
+              value: {{ .Values.app.analyticsEnabled | quote }}
+            # Server
+            - name: LIDARR__SERVER__BINDADDRESS
+              value: {{ .Values.app.server.bindAddress | quote }}
+            - name: LIDARR__SERVER__PORT
+              value: "8686"
+            # Update
+            - name: LIDARR__UPDATE__MECHANISM
+              value: "Docker"
+            - name: LIDARR__UPDATE__AUTOMATICALLY
+              value: "False"
+            - name: LIDARR__UPDATE__BRANCH
+              value: {{ .Values.app.branch | quote }}
+            # Database (PostgreSQL)
+            {{- if .Values.app.database.host }}
+            - name: LIDARR__POSTGRES__HOST
+              value: {{ .Values.app.database.host | quote }}
+            - name: LIDARR__POSTGRES__PORT
+              value: {{ .Values.app.database.port | quote }}
+            - name: LIDARR__POSTGRES__USER
+              value: {{ .Values.app.database.user | quote }}
+            - name: LIDARR__POSTGRES__MAINDB
+              value: {{ .Values.app.database.name | quote }}
+            - name: LIDARR__POSTGRES__LOGDB
+              value: {{ .Values.app.database.logsName | quote }}
+            - name: LIDARR__POSTGRES__PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.app.database.existingSecret }}
+                  name: {{ .Values.app.database.existingSecret }}
+                  key: {{ .Values.app.database.passwordKey }}
+                  {{- else }}
+                  name: {{ include "lidarr.secretName" . }}
+                  key: db-password
+                  {{- end }}
+            {{- end }}
+            # Extra env
+            {{- with .Values.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- with .Values.extraEnvFrom }}
+          envFrom:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            {{- if .Values.persistence.enabled }}
+            - name: config
+              mountPath: /config
+            {{- end }}
+            # Tmp for readOnlyRootFilesystem
+            - name: tmp
+              mountPath: /tmp
+            {{- with .Values.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- with .Values.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        {{- if .Values.persistence.enabled }}
+        - name: config
+          persistentVolumeClaim:
+            claimName: {{ include "lidarr.pvcName" . }}
+        {{- end }}
+        - name: tmp
+          emptyDir: {}
+        {{- with .Values.volumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

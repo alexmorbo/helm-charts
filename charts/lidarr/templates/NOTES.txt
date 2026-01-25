@@ -1,0 +1,32 @@
+Lidarr has been deployed!
+
+Release: {{ .Release.Name }}
+Namespace: {{ .Release.Namespace }}
+
+{{- if .Values.ingress.enabled }}
+Access Lidarr at:
+{{- range $host := .Values.ingress.hosts }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}
+{{- end }}
+{{- else if .Values.route.enabled }}
+Access Lidarr at:
+{{- range $hostname := .Values.route.hostnames }}
+  https://{{ $hostname }}
+{{- end }}
+{{- else }}
+To access Lidarr, run:
+  kubectl port-forward svc/{{ include "lidarr.fullname" . }} {{ .Values.service.port }}:{{ .Values.service.port }} -n {{ .Release.Namespace }}
+Then open http://localhost:{{ .Values.service.port }}
+{{- end }}
+
+{{- if not .Values.app.auth.existingSecret }}
+
+API Key has been auto-generated. Retrieve it with:
+  kubectl get secret {{ include "lidarr.secretName" . }} -n {{ .Release.Namespace }} -o jsonpath='{.data.api-key}' | base64 -d
+{{- end }}
+
+{{- if .Values.app.database.host }}
+Database: PostgreSQL ({{ .Values.app.database.host }})
+{{- else }}
+Database: SQLite (embedded)
+{{- end }}
