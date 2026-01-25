@@ -1,0 +1,12 @@
+FlareSolverr has been deployed!
+
+Get the application URL by running:
+  kubectl port-forward svc/{{ include "flaresolverr.fullname" . }} {{ .Values.service.port }}:{{ .Values.service.port }} -n {{ .Release.Namespace }}
+  Then open http://localhost:{{ .Values.service.port }}
+
+To use FlareSolverr with Prowlarr:
+  1. Go to Prowlarr → Settings → Indexers → Add FlareSolverr
+  2. Set Host to: http://{{ include "flaresolverr.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.port }}
+  3. Test and Save
+
+Health check endpoint: /health

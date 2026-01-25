@@ -1,0 +1,117 @@
+# ==============================================================================
+# Global configuration
+# ==============================================================================
+global:
+  # -- Global image registry (used as fallback for all components)
+  imageRegistry: ""
+  # -- Global deployment strategy (used as fallback for all components)
+  strategy:
+    type: Recreate
+
+# ==============================================================================
+# Main FlareSolverr configuration
+# ==============================================================================
+image:
+  # -- Image registry (falls back to global.imageRegistry, then to ghcr.io)
+  registry: ""
+  repository: flaresolverr/flaresolverr
+  pullPolicy: IfNotPresent
+  # -- Overrides the image tag whose default is the chart appVersion
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+# -- Deployment strategy (falls back to global.strategy)
+strategy: {}
+
+# -- Number of replicas
+replicaCount: 1
+
+# -- Environment variables to add to the pods
+extraEnv: []
+# -- Environment variables from secrets or configmaps to add to the pods
+extraEnvFrom: []
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+service:
+  type: ClusterIP
+  port: 80
+  annotations: {}
+
+resources: {}
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+startupProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 5
+  timeoutSeconds: 5
+  failureThreshold: 30
+
+livenessProbe:
+  httpGet:
+    path: /health
+    port: http
+  periodSeconds: 30
+  timeoutSeconds: 10
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: http
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+# ==============================================================================
+# Application configuration
+# ==============================================================================
+app:
+  # -- Log level: debug, info, warn, error
+  logLevel: "info"
+
+  # -- Log output in HTML format
+  logHtml: false
+
+  # -- Anthropic captcha solver API key (optional)
+  captchaSolver: ""
+
+  # -- Anthropic captcha solver API key from existing secret
+  existingSecret: ""
+  captchaSolverKey: "captcha-solver"
+
+  # -- Browser timeout in milliseconds
+  browserTimeout: 40000
+
+  # -- Test URL for health checks
+  testUrl: "https://www.google.com"
+
+  # -- Headless browser mode
+  headless: true
+
+  # -- Browser language
+  lang: ""
+
+  # -- Prometheus metrics
+  prometheusEnabled: false
+  prometheusPort: 8192
