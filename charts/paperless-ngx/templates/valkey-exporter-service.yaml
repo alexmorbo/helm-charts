@@ -1,0 +1,21 @@
+{{- if and .Values.monitoring.enabled .Values.monitoring.valkeyExporter.enabled .Values.app.valkey.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "paperless-ngx.fullname" . }}-valkey-exporter
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "paperless-ngx.labels" . | nindent 4 }}
+    app.kubernetes.io/component: valkey-exporter
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.monitoring.valkeyExporter.port }}
+      targetPort: metrics
+      protocol: TCP
+      name: metrics
+  selector:
+    app.kubernetes.io/name: {{ include "paperless-ngx.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: valkey-exporter
+{{- end }}

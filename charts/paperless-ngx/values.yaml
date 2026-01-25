@@ -181,12 +181,61 @@ gotenberg:
 # -- Monitoring configuration
 monitoring:
   enabled: false
+  # -- Type of service monitor: ServiceMonitor (Prometheus) or VMServiceScrape (VictoriaMetrics)
   type: ServiceMonitor
   path: /metrics
   interval: 30s
   scrapeTimeout: 10s
   labels: {}
   namespace: ""
+
+  # -- Paperless exporter (prometheus-paperless-exporter)
+  # Exports metrics from Paperless-ngx via REST API
+  # Token is automatically created via post-install Job (creates "monitoring" user)
+  paperlessExporter:
+    enabled: true
+    image:
+      # -- Registry (falls back to global.imageRegistry, then to ghcr.io)
+      registry: ""
+      repository: hansmi/prometheus-paperless-exporter
+      tag: "v0.0.9"
+      pullPolicy: IfNotPresent
+    port: 8081
+    # -- Existing secret with API token (if set, disables auto-creation)
+    existingSecret: ""
+    # -- Key in the secret containing the API token
+    secretKey: "api-token"
+    # -- Collectors to enable (empty = all). Options: tag, correspondent, document_type, storage_path, task, log, group, user, document, status, statistics, remote_version
+    collectors: []
+    resources: {}
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+
+  # -- kubectl image for init containers and jobs
+  kubectl:
+    # -- Registry (falls back to global.imageRegistry, then to docker.io)
+    registry: ""
+    repository: alpine/kubectl
+    # -- Tag (empty = auto-detect from cluster version)
+    tag: ""
+    pullPolicy: IfNotPresent
+
+  # -- Valkey/Redis exporter
+  # Exports Redis-compatible metrics from Valkey
+  valkeyExporter:
+    enabled: true
+    image:
+      # -- Registry (falls back to global.imageRegistry, then to docker.io)
+      registry: ""
+      repository: oliver006/redis_exporter
+      tag: "v1.80.1"
+      pullPolicy: IfNotPresent
+    port: 9121
+    resources: {}
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
 
 # ==============================================================================
 # Application configuration
@@ -298,9 +347,12 @@ paperlessAi:
 
   # Paperless-ngx connection
   paperless:
-    # API token - create in Paperless UI: Settings -> API Tokens
+    # -- Use shared API token from monitoring (created automatically)
+    useSharedToken: true
+    # -- Existing secret with API token (overrides useSharedToken)
     existingSecret: ""
     secretKey: "api-token"
+    # -- API token (if not using existingSecret or useSharedToken)
     apiToken: ""
 
   # Processing settings

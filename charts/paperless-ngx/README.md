@@ -1,7 +1,7 @@
 
 # paperless-ngx
 
-![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.20.5](https://img.shields.io/badge/AppVersion-2.20.5-informational?style=flat-square)
+![Version: 0.1.1](https://img.shields.io/badge/Version-0.1.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.20.5](https://img.shields.io/badge/AppVersion-2.20.5-informational?style=flat-square)
 
 Paperless-ngx helm chart for Kubernetes - Document management system
 
@@ -72,7 +72,18 @@ Kubernetes: `>=1.23.0-0`
 | livenessProbe.httpGet.port | string | `"http"` |  |
 | livenessProbe.periodSeconds | int | `10` |  |
 | livenessProbe.timeoutSeconds | int | `5` |  |
-| monitoring | object | `{"enabled":false,"interval":"30s","labels":{},"namespace":"","path":"/metrics","scrapeTimeout":"10s","type":"ServiceMonitor"}` | Monitoring configuration |
+| monitoring | object | `{"enabled":false,"interval":"30s","kubectl":{"pullPolicy":"IfNotPresent","registry":"","repository":"alpine/kubectl","tag":""},"labels":{},"namespace":"","paperlessExporter":{"affinity":{},"collectors":[],"enabled":true,"existingSecret":"","image":{"pullPolicy":"IfNotPresent","registry":"","repository":"hansmi/prometheus-paperless-exporter","tag":"v0.0.9"},"nodeSelector":{},"port":8081,"resources":{},"secretKey":"api-token","tolerations":[]},"path":"/metrics","scrapeTimeout":"10s","type":"ServiceMonitor","valkeyExporter":{"affinity":{},"enabled":true,"image":{"pullPolicy":"IfNotPresent","registry":"","repository":"oliver006/redis_exporter","tag":"v1.80.1"},"nodeSelector":{},"port":9121,"resources":{},"tolerations":[]}}` | Monitoring configuration |
+| monitoring.kubectl | object | `{"pullPolicy":"IfNotPresent","registry":"","repository":"alpine/kubectl","tag":""}` | kubectl image for init containers and jobs |
+| monitoring.kubectl.registry | string | `""` | Registry (falls back to global.imageRegistry, then to docker.io) |
+| monitoring.kubectl.tag | string | `""` | Tag (empty = auto-detect from cluster version) |
+| monitoring.paperlessExporter | object | `{"affinity":{},"collectors":[],"enabled":true,"existingSecret":"","image":{"pullPolicy":"IfNotPresent","registry":"","repository":"hansmi/prometheus-paperless-exporter","tag":"v0.0.9"},"nodeSelector":{},"port":8081,"resources":{},"secretKey":"api-token","tolerations":[]}` | Paperless exporter (prometheus-paperless-exporter) Exports metrics from Paperless-ngx via REST API Token is automatically created via post-install Job (creates "monitoring" user) |
+| monitoring.paperlessExporter.collectors | list | `[]` | Collectors to enable (empty = all). Options: tag, correspondent, document_type, storage_path, task, log, group, user, document, status, statistics, remote_version |
+| monitoring.paperlessExporter.existingSecret | string | `""` | Existing secret with API token (if set, disables auto-creation) |
+| monitoring.paperlessExporter.image.registry | string | `""` | Registry (falls back to global.imageRegistry, then to ghcr.io) |
+| monitoring.paperlessExporter.secretKey | string | `"api-token"` | Key in the secret containing the API token |
+| monitoring.type | string | `"ServiceMonitor"` | Type of service monitor: ServiceMonitor (Prometheus) or VMServiceScrape (VictoriaMetrics) |
+| monitoring.valkeyExporter | object | `{"affinity":{},"enabled":true,"image":{"pullPolicy":"IfNotPresent","registry":"","repository":"oliver006/redis_exporter","tag":"v1.80.1"},"nodeSelector":{},"port":9121,"resources":{},"tolerations":[]}` | Valkey/Redis exporter Exports Redis-compatible metrics from Valkey |
+| monitoring.valkeyExporter.image.registry | string | `""` | Registry (falls back to global.imageRegistry, then to docker.io) |
 | nameOverride | string | `""` |  |
 | nodeSelector | object | `{}` |  |
 | paperlessAi.addProcessedTag | bool | `true` |  |
@@ -99,9 +110,10 @@ Kubernetes: `>=1.23.0-0`
 | paperlessAi.openai.existingSecret | string | `""` |  |
 | paperlessAi.openai.model | string | `"gpt-4o-mini"` |  |
 | paperlessAi.openai.secretKey | string | `"api-key"` |  |
-| paperlessAi.paperless.apiToken | string | `""` |  |
-| paperlessAi.paperless.existingSecret | string | `""` |  |
+| paperlessAi.paperless.apiToken | string | `""` | API token (if not using existingSecret or useSharedToken) |
+| paperlessAi.paperless.existingSecret | string | `""` | Existing secret with API token (overrides useSharedToken) |
 | paperlessAi.paperless.secretKey | string | `"api-token"` |  |
+| paperlessAi.paperless.useSharedToken | bool | `true` | Use shared API token from monitoring (created automatically) |
 | paperlessAi.persistence.enabled | bool | `true` |  |
 | paperlessAi.persistence.existingClaim | string | `""` |  |
 | paperlessAi.persistence.size | string | `"1Gi"` |  |

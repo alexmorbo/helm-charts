@@ -1,0 +1,99 @@
+{{- if and .Values.monitoring.enabled .Values.monitoring.paperlessExporter.enabled }}
+{{- $secretName := .Values.monitoring.paperlessExporter.existingSecret | default (printf "%s-monitoring-api-token" (include "paperless-ngx.fullname" .)) }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "paperless-ngx.fullname" . }}-exporter
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "paperless-ngx.labels" . | nindent 4 }}
+    app.kubernetes.io/component: exporter
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "paperless-ngx.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: exporter
+  template:
+    metadata:
+      labels:
+        {{- include "paperless-ngx.labels" . | nindent 8 }}
+        app.kubernetes.io/component: exporter
+    spec:
+      {{- if not .Values.monitoring.paperlessExporter.existingSecret }}
+      serviceAccountName: {{ include "paperless-ngx.fullname" . }}-exporter
+      {{- end }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if not .Values.monitoring.paperlessExporter.existingSecret }}
+      initContainers:
+        - name: wait-for-token
+          image: {{ include "paperless-ngx.kubectlImage" . }}
+          imagePullPolicy: {{ .Values.monitoring.kubectl.pullPolicy | default "IfNotPresent" }}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Waiting for API token secret..."
+              until kubectl get secret {{ $secretName }} -n {{ .Release.Namespace }} -o jsonpath='{.data.api-token}' 2>/dev/null | base64 -d | grep -q .; do
+                echo "Secret not ready, waiting..."
+                sleep 5
+              done
+              echo "Token secret is ready!"
+      {{- end }}
+      containers:
+        - name: exporter
+          image: {{ include "paperless-ngx.paperlessExporterImage" . }}
+          imagePullPolicy: {{ .Values.monitoring.paperlessExporter.image.pullPolicy }}
+          args:
+            - --paperless_url=http://{{ include "paperless-ngx.fullname" . }}:{{ .Values.service.port }}
+            - --web.listen-address=:{{ .Values.monitoring.paperlessExporter.port }}
+            {{- if .Values.monitoring.paperlessExporter.collectors }}
+            - --collectors={{ join "," .Values.monitoring.paperlessExporter.collectors }}
+            {{- end }}
+          env:
+            - name: PAPERLESS_AUTH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secretName }}
+                  key: {{ .Values.monitoring.paperlessExporter.secretKey }}
+          ports:
+            - name: metrics
+              containerPort: {{ .Values.monitoring.paperlessExporter.port }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /metrics
+              port: metrics
+            initialDelaySeconds: 30
+            periodSeconds: 60
+            timeoutSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: metrics
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 30
+          {{- with .Values.monitoring.paperlessExporter.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.monitoring.paperlessExporter.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.monitoring.paperlessExporter.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.monitoring.paperlessExporter.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

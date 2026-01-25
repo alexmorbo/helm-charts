@@ -111,3 +111,37 @@ PVC name
 {{- include "paperless-ngx.fullname" . }}
 {{- end }}
 {{- end }}
+
+{{/*
+kubectl image for init containers and jobs
+Auto-detects cluster version if tag is empty (uses full semver from GitVersion)
+*/}}
+{{- define "paperless-ngx.kubectlImage" -}}
+{{- $registry := include "paperless-ngx.imageRegistry" (dict "local" .Values.monitoring.kubectl.registry "global" .Values.global.imageRegistry "default" "docker.io") -}}
+{{- $repository := .Values.monitoring.kubectl.repository | default "alpine/kubectl" -}}
+{{- $tag := .Values.monitoring.kubectl.tag -}}
+{{- if not $tag -}}
+{{- $tag = trimPrefix "v" .Capabilities.KubeVersion.GitVersion -}}
+{{- end -}}
+{{- printf "%s/%s:%s" $registry $repository $tag -}}
+{{- end }}
+
+{{/*
+Paperless exporter image
+*/}}
+{{- define "paperless-ngx.paperlessExporterImage" -}}
+{{- $registry := include "paperless-ngx.imageRegistry" (dict "local" .Values.monitoring.paperlessExporter.image.registry "global" .Values.global.imageRegistry "default" "ghcr.io") -}}
+{{- $repository := .Values.monitoring.paperlessExporter.image.repository -}}
+{{- $tag := .Values.monitoring.paperlessExporter.image.tag -}}
+{{- printf "%s/%s:%s" $registry $repository $tag -}}
+{{- end }}
+
+{{/*
+Valkey exporter image
+*/}}
+{{- define "paperless-ngx.valkeyExporterImage" -}}
+{{- $registry := include "paperless-ngx.imageRegistry" (dict "local" .Values.monitoring.valkeyExporter.image.registry "global" .Values.global.imageRegistry "default" "docker.io") -}}
+{{- $repository := .Values.monitoring.valkeyExporter.image.repository -}}
+{{- $tag := .Values.monitoring.valkeyExporter.image.tag -}}
+{{- printf "%s/%s:%s" $registry $repository $tag -}}
+{{- end }}

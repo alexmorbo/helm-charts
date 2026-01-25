@@ -22,9 +22,28 @@ spec:
         {{- include "paperless-ngx.labels" . | nindent 8 }}
         app.kubernetes.io/component: ai
     spec:
+      {{- if and .Values.paperlessAi.paperless.useSharedToken (not .Values.paperlessAi.paperless.existingSecret) }}
+      serviceAccountName: {{ include "paperless-ngx.fullname" . }}-exporter
+      {{- end }}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if and .Values.paperlessAi.paperless.useSharedToken (not .Values.paperlessAi.paperless.existingSecret) }}
+      initContainers:
+        - name: wait-for-token
+          image: {{ include "paperless-ngx.kubectlImage" . }}
+          imagePullPolicy: {{ .Values.monitoring.kubectl.pullPolicy | default "IfNotPresent" }}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Waiting for API token secret..."
+              until kubectl get secret {{ include "paperless-ngx.fullname" . }}-monitoring-api-token -n {{ .Release.Namespace }} -o jsonpath='{.data.api-token}' 2>/dev/null | base64 -d | grep -q .; do
+                echo "Secret not ready, waiting..."
+                sleep 5
+              done
+              echo "Token secret is ready!"
       {{- end }}
       containers:
         - name: paperless-ai
@@ -44,6 +63,9 @@ spec:
                   {{- if .Values.paperlessAi.paperless.existingSecret }}
                   name: {{ .Values.paperlessAi.paperless.existingSecret }}
                   key: {{ .Values.paperlessAi.paperless.secretKey }}
+                  {{- else if .Values.paperlessAi.paperless.useSharedToken }}
+                  name: {{ include "paperless-ngx.fullname" . }}-monitoring-api-token
+                  key: api-token
                   {{- else }}
                   name: {{ include "paperless-ngx.fullname" . }}-ai
                   key: paperless-token

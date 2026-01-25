@@ -3,7 +3,7 @@ kubeVersion: ">=1.23.0-0"
 name: paperless-ngx
 description: Paperless-ngx helm chart for Kubernetes - Document management system
 type: application
-version: 0.1.0
+version: 0.1.1
 appVersion: "2.20.5"
 maintainers:
   - name: AlexMorbo

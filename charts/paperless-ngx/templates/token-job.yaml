@@ -1,0 +1,102 @@
+{{- if .Values.monitoring.enabled }}
+{{- if or .Values.monitoring.paperlessExporter.enabled .Values.paperlessAi.enabled }}
+{{- if not .Values.monitoring.paperlessExporter.existingSecret }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "paperless-ngx.fullname" . }}-token-creator
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "paperless-ngx.labels" . | nindent 4 }}
+    app.kubernetes.io/component: token-creator
+spec:
+  ttlSecondsAfterFinished: 300
+  backoffLimit: 10
+  template:
+    metadata:
+      labels:
+        {{- include "paperless-ngx.labels" . | nindent 8 }}
+        app.kubernetes.io/component: token-creator
+    spec:
+      serviceAccountName: {{ include "paperless-ngx.fullname" . }}-token-creator
+      restartPolicy: OnFailure
+      containers:
+        - name: token-creator
+          image: {{ include "paperless-ngx.kubectlImage" . }}
+          imagePullPolicy: {{ .Values.monitoring.kubectl.pullPolicy | default "IfNotPresent" }}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+
+              NAMESPACE="{{ .Release.Namespace }}"
+              PAPERLESS_DEPLOY="{{ include "paperless-ngx.fullname" . }}"
+              SECRET_NAME="{{ include "paperless-ngx.fullname" . }}-monitoring-api-token"
+
+              echo "Waiting for Paperless deployment to be ready..."
+              kubectl rollout status deployment/${PAPERLESS_DEPLOY} -n ${NAMESPACE} --timeout=600s
+
+              echo "Waiting for Paperless API to be available..."
+              until kubectl exec deployment/${PAPERLESS_DEPLOY} -n ${NAMESPACE} -- \
+                curl -sf http://localhost:8000/ > /dev/null 2>&1; do
+                echo "Paperless not ready yet, waiting..."
+                sleep 10
+              done
+
+              echo "Creating monitoring user and token..."
+              TOKEN=$(kubectl exec deployment/${PAPERLESS_DEPLOY} -n ${NAMESPACE} -- \
+                python3 /usr/src/paperless/src/manage.py shell -c "
+              from rest_framework.authtoken.models import Token
+              from django.contrib.auth.models import User, Permission
+              from django.contrib.contenttypes.models import ContentType
+
+              user, created = User.objects.get_or_create(
+                  username='monitoring',
+                  defaults={'is_active': True, 'is_staff': True}
+              )
+              if not user.is_staff:
+                  user.is_staff = True
+                  user.save()
+
+              # Grant view permissions for exporter
+              view_models = [
+                  'correspondent', 'document', 'documenttype', 'tag',
+                  'storagepath', 'paperlesstask', 'uisettings', 'savedview',
+                  'log', 'user', 'group', 'mailaccount', 'mailrule', 'workflow'
+              ]
+              for model in view_models:
+                  try:
+                      perm = Permission.objects.get(codename=f'view_{model}')
+                      user.user_permissions.add(perm)
+                  except Permission.DoesNotExist:
+                      pass
+
+              user.save()
+              token, _ = Token.objects.get_or_create(user=user)
+              print(token.key)
+              " 2>/dev/null | tail -1)
+
+              if [ -z "$TOKEN" ]; then
+                echo "Failed to create token"
+                exit 1
+              fi
+
+              echo "Token created successfully"
+
+              # Check if secret exists
+              if kubectl get secret ${SECRET_NAME} -n ${NAMESPACE} > /dev/null 2>&1; then
+                echo "Updating existing secret..."
+                kubectl patch secret ${SECRET_NAME} -n ${NAMESPACE} \
+                  --type='json' \
+                  -p="[{\"op\": \"replace\", \"path\": \"/data/api-token\", \"value\": \"$(echo -n $TOKEN | base64)\"}]"
+              else
+                echo "Creating new secret..."
+                kubectl create secret generic ${SECRET_NAME} -n ${NAMESPACE} \
+                  --from-literal=api-token=${TOKEN}
+              fi
+
+              echo "Done!"
+{{- end }}
+{{- end }}
+{{- end }}

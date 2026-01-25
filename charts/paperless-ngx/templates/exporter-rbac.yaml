@@ -1,0 +1,44 @@
+{{- if and .Values.monitoring.enabled .Values.monitoring.paperlessExporter.enabled }}
+{{- if not .Values.monitoring.paperlessExporter.existingSecret }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "paperless-ngx.fullname" . }}-exporter
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "paperless-ngx.labels" . | nindent 4 }}
+    app.kubernetes.io/component: exporter
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "paperless-ngx.fullname" . }}-exporter
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "paperless-ngx.labels" . | nindent 4 }}
+    app.kubernetes.io/component: exporter
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    resourceNames: ["{{ include "paperless-ngx.fullname" . }}-monitoring-api-token"]
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "paperless-ngx.fullname" . }}-exporter
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "paperless-ngx.labels" . | nindent 4 }}
+    app.kubernetes.io/component: exporter
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "paperless-ngx.fullname" . }}-exporter
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "paperless-ngx.fullname" . }}-exporter
+    namespace: {{ .Release.Namespace }}
+{{- end }}
+{{- end }}

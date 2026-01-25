@@ -27,6 +27,9 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Add helm repositories
+        run: |
+          helm repo add valkey https://valkey.io/valkey-helm/
       - name: Package helm charts
         run: |
           mkdir -p ./.cr-release-packages
