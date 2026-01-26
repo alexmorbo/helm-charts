@@ -3,14 +3,14 @@ kubeVersion: ">=1.23.0-0"
 name: slskd
 description: A modern client-server application for the Soulseek file sharing network
 type: application
-version: 0.1.0
+version: 0.1.1
 appVersion: "0.24.3"
 maintainers:
   - name: AlexMorbo
     email: alex@morbo.ru
 sources:
   - https://github.com/alexmorbo/helm-charts/tree/master/charts/slskd
-icon: https://raw.githubusercontent.com/slskd/slskd/master/src/web/public/android-chrome-192x192.png
+icon: https://djeqr6to3dedg.cloudfront.net/repo-logos/slskd/slskd/live/logo-1705713025282.png
 home: https://github.com/alexmorbo/helm-charts
 keywords:
   - slskd
