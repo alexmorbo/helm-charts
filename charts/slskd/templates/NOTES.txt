@@ -1,0 +1,17 @@
+slskd has been deployed!
+
+{{- if .Values.ingress.enabled }}
+Access slskd at:
+{{- range $host := .Values.ingress.hosts }}
+  https://{{ $host.host }}
+{{- end }}
+{{- else }}
+Port-forward: kubectl port-forward svc/{{ include "slskd.fullname" . }} 8080:{{ .Values.service.port }} -n {{ .Release.Namespace }}
+{{- end }}
+
+{{- if .Values.p2pService.enabled }}
+Soulseek P2P: {{ .Values.p2pService.type }}:{{ .Values.p2pService.port }}
+{{- end }}
+
+API Key for Tubifarry:
+  kubectl get secret {{ include "slskd.secretName" . }} -n {{ .Release.Namespace }} -o jsonpath='{.data.api-key}' | base64 -d

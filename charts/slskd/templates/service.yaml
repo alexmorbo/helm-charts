@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "slskd.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "slskd.labels" . | nindent 4 }}
+  {{- with .Values.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "slskd.selectorLabels" . | nindent 4 }}
+---
+{{- if .Values.p2pService.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "slskd.fullname" . }}-p2p
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "slskd.labels" . | nindent 4 }}
+  {{- with .Values.p2pService.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.p2pService.type }}
+  ports:
+    - port: {{ .Values.p2pService.port }}
+      targetPort: soulseek
+      protocol: TCP
+      name: soulseek
+  selector:
+    {{- include "slskd.selectorLabels" . | nindent 4 }}
+{{- end }}

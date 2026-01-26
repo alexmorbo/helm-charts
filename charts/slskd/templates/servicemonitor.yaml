@@ -1,0 +1,33 @@
+{{- if .Values.monitoring.enabled }}
+apiVersion: {{ eq .Values.monitoring.type "VMServiceScrape" | ternary "operator.victoriametrics.com/v1beta1" "monitoring.coreos.com/v1" }}
+kind: {{ .Values.monitoring.type }}
+metadata:
+  name: {{ include "slskd.fullname" . }}
+  namespace: {{ .Values.monitoring.namespace | default .Release.Namespace }}
+  labels:
+    {{- include "slskd.labels" . | nindent 4 }}
+    {{- with .Values.monitoring.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "slskd.selectorLabels" . | nindent 6 }}
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  endpoints:
+    - port: http
+      path: {{ .Values.monitoring.path }}
+      interval: {{ .Values.monitoring.interval }}
+      scrapeTimeout: {{ .Values.monitoring.scrapeTimeout }}
+      {{- if and .Values.monitoring.basicAuth.enabled .Values.monitoring.basicAuth.secretName }}
+      basicAuth:
+        username:
+          name: {{ .Values.monitoring.basicAuth.secretName }}
+          key: username
+        password:
+          name: {{ .Values.monitoring.basicAuth.secretName }}
+          key: password
+      {{- end }}
+{{- end }}

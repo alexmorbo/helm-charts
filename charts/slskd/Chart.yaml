@@ -1,0 +1,30 @@
+apiVersion: v2
+kubeVersion: ">=1.23.0-0"
+name: slskd
+description: A modern client-server application for the Soulseek file sharing network
+type: application
+version: 0.1.0
+appVersion: "0.24.3"
+maintainers:
+  - name: AlexMorbo
+    email: alex@morbo.ru
+sources:
+  - https://github.com/alexmorbo/helm-charts/tree/master/charts/slskd
+icon: https://raw.githubusercontent.com/slskd/slskd/master/src/web/public/android-chrome-192x192.png
+home: https://github.com/alexmorbo/helm-charts
+keywords:
+  - slskd
+  - soulseek
+  - p2p
+  - music
+  - file-sharing
+annotations:
+  artifacthub.io/license: MIT
+  artifacthub.io/links: |-
+    - name: App Source
+      url: https://github.com/slskd/slskd
+    - name: Chart Source
+      url: https://github.com/alexmorbo/helm-charts/tree/master/charts/slskd
+  artifacthub.io/images: |
+    - name: slskd
+      image: slskd/slskd:0.24.3

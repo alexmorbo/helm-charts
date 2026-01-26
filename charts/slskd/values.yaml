@@ -1,0 +1,223 @@
+# ==============================================================================
+# Global configuration
+# ==============================================================================
+global:
+  imageRegistry: ""
+  strategy:
+    type: Recreate
+
+# ==============================================================================
+# Image
+# ==============================================================================
+image:
+  registry: ghcr.io
+  repository: slskd/slskd
+  pullPolicy: IfNotPresent
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+strategy: {}
+replicaCount: 1
+
+extraEnv: []
+extraEnvFrom: []
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  fsGroup: 1000
+  fsGroupChangePolicy: OnRootMismatch
+
+securityContext:
+  runAsUser: 1000
+  runAsGroup: 1000
+  runAsNonRoot: true
+
+# ==============================================================================
+# Services
+# ==============================================================================
+service:
+  type: ClusterIP
+  port: 80
+  annotations: {}
+
+p2pService:
+  enabled: true
+  type: LoadBalancer
+  port: 50300
+  annotations: {}
+
+# ==============================================================================
+# Ingress
+# ==============================================================================
+ingress:
+  enabled: false
+  ingressClassName: ""
+  annotations: {}
+  hosts:
+    - host: slskd.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+route:
+  enabled: false
+  parentRefs: []
+  hostnames: []
+  annotations: {}
+  labels: {}
+
+# ==============================================================================
+# Storage
+# ==============================================================================
+persistence:
+  enabled: true
+  size: 5Gi
+  storageClass: ""
+  accessModes:
+    - ReadWriteOnce
+  existingClaim: ""
+  annotations: {}
+
+# Extra volumes (NFS for media)
+volumes: []
+volumeMounts: []
+
+# ==============================================================================
+# Resources
+# ==============================================================================
+resources: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# ==============================================================================
+# Probes
+# ==============================================================================
+startupProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 5
+  timeoutSeconds: 5
+  failureThreshold: 30
+
+livenessProbe:
+  httpGet:
+    path: /health
+    port: http
+  periodSeconds: 30
+  timeoutSeconds: 10
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: http
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+# ==============================================================================
+# Metrics (slskd native Prometheus metrics)
+# ==============================================================================
+metrics:
+  enabled: false
+  # Authentication for /metrics endpoint (separate from web UI auth)
+  authentication:
+    disabled: false
+    # Credentials stored in existingSecret or app.existingSecret
+    # keys: metrics-username, metrics-password
+
+# ==============================================================================
+# Monitoring (ServiceMonitor / VMServiceScrape)
+# ==============================================================================
+monitoring:
+  enabled: false
+  # Type: ServiceMonitor (Prometheus) or VMServiceScrape (VictoriaMetrics)
+  type: ServiceMonitor
+  path: /metrics
+  interval: 30s
+  scrapeTimeout: 10s
+  labels: {}
+  namespace: ""
+  # Basic auth for scraping metrics endpoint
+  basicAuth:
+    enabled: false
+    # Secret with 'username' and 'password' keys
+    secretName: ""
+
+# ==============================================================================
+# Application Configuration
+# ==============================================================================
+app:
+  timezone: "UTC"
+  remoteConfiguration: false
+  urlBase: ""
+
+  # Existing secret with soulseek-username, soulseek-password, api-key
+  existingSecret: ""
+
+  # Soulseek credentials (if not using existingSecret)
+  soulseek:
+    username: ""
+    password: ""
+    listenPort: 50300
+    distributedNetwork:
+      enabled: true
+      childLimit: 50
+
+  # Web UI (if not using existingSecret for api-key)
+  web:
+    apiKey: ""
+    # Disable built-in authentication (use when behind auth proxy like Authentik)
+    authenticationDisabled: false
+
+  # Directories (paths inside container)
+  directories:
+    downloads: /media/downloads/slskd
+    incomplete: /media/downloads/slskd/incomplete
+
+  # Shares configuration
+  shares:
+    directories:
+      - /media/music
+    filters:
+      - '\.ini$'
+      - 'Thumbs\.db$'
+      - '\.DS_Store$'
+      - '@eaDir'
+    cache:
+      storageMode: memory
+      retention: 10080
+
+  # Limits
+  limits:
+    upload:
+      slots: 10
+      speedLimit: 1000
+    download:
+      slots: 50
+      speedLimit: 0
+
+  # Retention (days, 0 = keep forever)
+  retention:
+    uploads: 0
+    downloads: 0
+    searches: 7
+
+  # Permissions
+  permissions:
+    fileMode: "0644"
