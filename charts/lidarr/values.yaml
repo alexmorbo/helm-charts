@@ -140,6 +140,18 @@ monitoring:
   labels: {}
   namespace: ""
 
+# -- YouTube cookies for Tubifarry/yt-dlp
+youtubeCookies:
+  # -- Enable YouTube cookies mounting
+  enabled: false
+  # -- Path inside container where cookies file will be mounted
+  mountPath: /config/youtube_cookies.txt
+  # -- Use existing secret (must contain 'cookies.txt' key)
+  existingSecret: ""
+  # -- Cookies content (Netscape format, used if existingSecret is empty)
+  # Get from browser extension like "Get cookies.txt LOCALLY"
+  content: ""
+
 # ==============================================================================
 # Application configuration
 # ==============================================================================

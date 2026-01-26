@@ -124,6 +124,12 @@ spec:
             # Tmp for readOnlyRootFilesystem
             - name: tmp
               mountPath: /tmp
+            {{- if .Values.youtubeCookies.enabled }}
+            - name: youtube-cookies
+              mountPath: {{ .Values.youtubeCookies.mountPath }}
+              subPath: cookies.txt
+              readOnly: true
+            {{- end }}
             {{- with .Values.volumeMounts }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
@@ -151,6 +157,11 @@ spec:
         {{- end }}
         - name: tmp
           emptyDir: {}
+        {{- if .Values.youtubeCookies.enabled }}
+        - name: youtube-cookies
+          secret:
+            secretName: {{ .Values.youtubeCookies.existingSecret | default (printf "%s-youtube-cookies" (include "lidarr.fullname" .)) }}
+        {{- end }}
         {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
