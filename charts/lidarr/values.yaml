@@ -152,6 +152,25 @@ youtubeCookies:
   # Get from browser extension like "Get cookies.txt LOCALLY"
   content: ""
 
+# -- Extra init containers (e.g., for installing ffmpeg)
+extraInitContainers: []
+# Example for ffmpeg:
+# - name: install-ffmpeg
+#   image: alpine:3.21
+#   command:
+#     - sh
+#     - -c
+#     - |
+#       if [ ! -f /config/ffmpeg/ffmpeg ]; then
+#         apk add --no-cache ffmpeg
+#         mkdir -p /config/ffmpeg
+#         cp /usr/bin/ffmpeg /config/ffmpeg/
+#         cp /usr/bin/ffprobe /config/ffmpeg/
+#       fi
+#   volumeMounts:
+#     - name: config
+#       mountPath: /config
+
 # ==============================================================================
 # Application configuration
 # ==============================================================================

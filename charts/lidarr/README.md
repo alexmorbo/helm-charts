@@ -1,7 +1,7 @@
 
 # lidarr
 
-![Version: 0.1.1](https://img.shields.io/badge/Version-0.1.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.1.2.4902](https://img.shields.io/badge/AppVersion-3.1.2.4902-informational?style=flat-square)
+![Version: 0.1.2](https://img.shields.io/badge/Version-0.1.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.1.2.4902](https://img.shields.io/badge/AppVersion-3.1.2.4902-informational?style=flat-square)
 
 Lidarr helm chart for Kubernetes - Music collection manager for Usenet and BitTorrent users
 
@@ -48,6 +48,7 @@ Kubernetes: `>=1.23.0-0`
 | app.timezone | string | `"UTC"` | Timezone (e.g., Europe/Moscow, UTC) |
 | extraEnv | list | `[]` | Environment variables to add to the pods |
 | extraEnvFrom | list | `[]` | Environment variables from secrets or configmaps to add to the pods |
+| extraInitContainers | list | `[]` | Extra init containers (e.g., for installing ffmpeg) |
 | fullnameOverride | string | `""` |  |
 | global.imageRegistry | string | `""` | Global image registry (used as fallback for all components) |
 | global.strategy | object | `{"type":"Recreate"}` | Global deployment strategy (used as fallback for all components) |
