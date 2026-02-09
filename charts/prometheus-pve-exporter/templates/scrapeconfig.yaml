@@ -16,8 +16,13 @@ metadata:
     {{- toYaml . | nindent 4 }}
     {{- end }}
 spec:
+  {{- if eq $.Values.observability.type "victoriametrics" }}
+  interval: {{ $.Values.observability.scrape.interval | default "30s" }}
+  path: /pve
+  {{- else }}
   scrapeInterval: {{ $.Values.observability.scrape.interval | default "30s" }}
   metricsPath: /pve
+  {{- end }}
   params:
     target: [{{ $target }}]
     module: [{{ $moduleName }}]
