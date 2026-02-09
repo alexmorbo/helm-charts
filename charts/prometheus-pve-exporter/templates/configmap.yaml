@@ -11,4 +11,7 @@ data:
         user: {{ index (split "!" $module.token_id) "_0" }}
         token_name: {{ index (split "!" $module.token_id) "_1" }}
         token_value: {{ $module.token_secret }}
+        {{- if hasKey $module "verify_ssl" }}
+        verify_ssl: {{ $module.verify_ssl }}
+        {{- end }}
     {{- end }}

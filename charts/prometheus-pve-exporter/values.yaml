@@ -32,6 +32,7 @@ modules: {}
 #  default:
 #    token_id: ""
 #    token_secret: ""
+#    verify_ssl: true
 #    targets:
 #      - pve.homelab.local
 
