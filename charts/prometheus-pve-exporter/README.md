@@ -1,7 +1,7 @@
 
 # prometheus-pve-exporter
 
-![Version: 1.4.1](https://img.shields.io/badge/Version-1.4.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.8.0](https://img.shields.io/badge/AppVersion-3.8.0-informational?style=flat-square)
+![Version: 1.4.2](https://img.shields.io/badge/Version-1.4.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.8.0](https://img.shields.io/badge/AppVersion-3.8.0-informational?style=flat-square)
 
 Prometheus pve exporter helm chart for Kubernetes
 
@@ -227,14 +227,15 @@ Based on configuration, the chart creates:
 | modules | object | `{}` |  |
 | nameOverride | string | `""` |  |
 | nodeSelector | object | `{}` |  |
-| observability | object | `{"rules":{"enabled":false,"selector":{}},"scrape":{"enabled":true,"interval":"30s","selector":{"release":"kube-prometheus"}},"type":"prometheus"}` | Observability configuration for Prometheus Operator or VictoriaMetrics Operator |
+| observability | object | `{"rules":{"enabled":false,"selector":{}},"scrape":{"enabled":true,"interval":"30s","selector":{"release":"kube-prometheus"},"timeout":"60s"},"type":"prometheus"}` | Observability configuration for Prometheus Operator or VictoriaMetrics Operator |
 | observability.rules | object | `{"enabled":false,"selector":{}}` | Alerting rules (PrometheusRule or VMRule) |
 | observability.rules.enabled | bool | `false` | Enable alerting rules creation |
 | observability.rules.selector | object | `{}` | Additional labels for rule selection by Prometheus/VMAlert |
-| observability.scrape | object | `{"enabled":true,"interval":"30s","selector":{"release":"kube-prometheus"}}` | Scrape configuration (ScrapeConfig or VMScrapeConfig) |
+| observability.scrape | object | `{"enabled":true,"interval":"30s","selector":{"release":"kube-prometheus"},"timeout":"60s"}` | Scrape configuration (ScrapeConfig or VMScrapeConfig) |
 | observability.scrape.enabled | bool | `true` | Enable scrape config creation |
 | observability.scrape.interval | string | `"30s"` | Scrape interval |
 | observability.scrape.selector | object | `{"release":"kube-prometheus"}` | Label selector for Prometheus/VMAgent to pick up this scrape config |
+| observability.scrape.timeout | string | `"60s"` | Scrape timeout (should be greater than modules.timeout) |
 | observability.type | string | `"prometheus"` | Type of observability stack: "prometheus" or "victoriametrics" |
 | podAnnotations | object | `{}` |  |
 | podLabels | object | `{}` |  |

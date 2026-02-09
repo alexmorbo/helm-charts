@@ -17,6 +17,8 @@ observability:
     enabled: true
     # -- Scrape interval
     interval: 30s
+    # -- Scrape timeout (should be greater than modules.timeout)
+    timeout: 60s
     # -- Label selector for Prometheus/VMAgent to pick up this scrape config
     selector:
       release: kube-prometheus
