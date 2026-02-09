@@ -1,10 +1,13 @@
-{{- if .Values.prometheusRule.enabled -}}
-apiVersion: monitoring.coreos.com/v1
-kind: PrometheusRule
+{{- if .Values.observability.rules.enabled }}
+apiVersion: {{ include "prometheus-pve-exporter.ruleApiVersion" . }}
+kind: {{ include "prometheus-pve-exporter.ruleKind" . }}
 metadata:
   name: {{ include "prometheus-pve-exporter.fullname" . }}
   labels:
     {{- include "prometheus-pve-exporter.labels" . | nindent 4 }}
+    {{- with .Values.observability.rules.selector }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
   groups:
     - name: PVEAlerts

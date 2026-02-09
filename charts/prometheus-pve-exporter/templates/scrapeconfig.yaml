@@ -1,14 +1,22 @@
+{{- if .Values.observability.scrape.enabled }}
+{{- $ctx := dict "first" true }}
 {{- range $moduleName, $module := .Values.modules }}
 {{- range $index, $target := $module.targets }}
-apiVersion: monitoring.coreos.com/v1alpha1
-kind: ScrapeConfig
+{{- if not (index $ctx "first") }}
+---
+{{- end }}
+{{- $_ := set $ctx "first" false }}
+apiVersion: {{ include "prometheus-pve-exporter.scrapeConfigApiVersion" $ }}
+kind: {{ include "prometheus-pve-exporter.scrapeConfigKind" $ }}
 metadata:
-  name: {{ include "prometheus-pve-exporter.name" $}}-{{ $index }}
+  name: {{ include "prometheus-pve-exporter.name" $ }}-{{ $moduleName }}-{{ $index }}
   labels:
     {{- include "prometheus-pve-exporter.labels" $ | nindent 4 }}
-    release: {{ $.Values.prometheus }}
+    {{- with $.Values.observability.scrape.selector }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
-  scrapeInterval: {{ $.Values.scrapeInterval | default "30s" }}
+  scrapeInterval: {{ $.Values.observability.scrape.interval | default "30s" }}
   metricsPath: /pve
   params:
     target: [{{ $target }}]
@@ -16,6 +24,6 @@ spec:
   staticConfigs:
     - targets:
         - {{ include "prometheus-pve-exporter.serviceName" $ }}.{{ $.Release.Namespace }}:{{ include "prometheus-pve-exporter.servicePort" $ }}
----
+{{- end }}
 {{- end }}
 {{- end }}

@@ -16,6 +16,13 @@
 
 {{ template "chart.requirementsSection" . }}
 
+## Features
+
+- Supports **Prometheus Operator** (ScrapeConfig, PrometheusRule)
+- Supports **VictoriaMetrics Operator** (VMScrapeConfig, VMRule)
+- Multiple PVE targets and modules
+- Built-in alerting rules for PVE monitoring
+
 ## Install
 
 ### PVE (Proxmox Virtual Environment) Configuration for Monitoring
@@ -48,7 +55,7 @@ pveum user token add monitoring@pve exporter -privsep 0
 ```
 
 The output will display important information about the token, such as the full token ID and its associated value.
-Here’s an example of what you should see:
+Here's an example of what you should see:
 
 ```shell
 ┌──────────────┬──────────────────────────────────────┐
@@ -66,16 +73,28 @@ Here’s an example of what you should see:
 - **info**: Additional token metadata, such as `privsep` (privacy separation), which in this case is set to 0.
 - **value**: The actual token value (`80051882-94e2-4fa4-bfdb-411235019fee`), which will be used for authentication.
 
-### Example Chart Configuration
+### Helm Installation
 
-Now that the user and token are set up, you need to configure helm chart.
-Below is an example of how to set up a Prometheus scrape configuration to monitor the Proxmox environment.
+```console
+helm install {{ template "chart.name" . }} oci://ghcr.io/alexmorbo/helm-charts/{{ template "chart.name" . }}
+```
 
-In this example, we configure Prometheus to monitor the Proxmox host located at `pve.homelab.local`.
-The configuration uses the token generated earlier for authentication.
+## Configuration Examples
+
+### Prometheus Operator (default)
 
 ```yaml
-prometheus: kube-prometheus-stack
+observability:
+  type: prometheus
+  scrape:
+    enabled: true
+    interval: 30s
+    selector:
+      release: kube-prometheus-stack
+  rules:
+    enabled: true
+    selector:
+      release: kube-prometheus-stack
 
 modules:
   default:
@@ -85,15 +104,71 @@ modules:
       - pve.homelab.local
 ```
 
-#### Explanation of the Configuration
+### VictoriaMetrics Operator
 
-- **prometheus**: The name of the Prometheus stack (in this case, `kube-prometheus-stack`).
-- **modules**: A section to define the authentication credentials for each target. In this case, we define a default module, which uses the previously created user (`monitoring@pve`) and token (`exporter`) for authentication. The `token_secret` is the generated token value (`80051882-94e2-4fa4-bfdb-411235019fee`).
-- **modules[].targets**: The list of hosts to scrape metrics from. Here, we specify the Proxmox host `pve.homelab.local`.
+```yaml
+observability:
+  type: victoriametrics
+  scrape:
+    enabled: true
+    interval: 30s
+    selector:
+      app.kubernetes.io/name: vmagent
+  rules:
+    enabled: true
+    selector:
+      app.kubernetes.io/name: vmalert
 
-### Helm
-```console
-helm install {{ template "chart.name" . }} oci://ghcr.io/alexmorbo/helm-charts/{{ template "chart.name" . }}
+modules:
+  default:
+    token_id: monitoring@pve!exporter
+    token_secret: 80051882-94e2-4fa4-bfdb-411235019fee
+    targets:
+      - pve.homelab.local
 ```
 
+### Multiple PVE Clusters
+
+```yaml
+observability:
+  type: prometheus
+  scrape:
+    enabled: true
+    selector:
+      release: kube-prometheus-stack
+
+modules:
+  datacenter1:
+    token_id: monitoring@pve!exporter
+    token_secret: secret-for-dc1
+    targets:
+      - pve1.dc1.local
+      - pve2.dc1.local
+      - pve3.dc1.local
+  datacenter2:
+    token_id: monitoring@pve!exporter
+    token_secret: secret-for-dc2
+    targets:
+      - pve1.dc2.local
+      - pve2.dc2.local
+```
+
+## Generated Resources
+
+Based on configuration, the chart creates:
+
+| observability.type | Scrape Config | Alerting Rules |
+|--------------------|---------------|----------------|
+| `prometheus` | `ScrapeConfig` (monitoring.coreos.com/v1alpha1) | `PrometheusRule` (monitoring.coreos.com/v1) |
+| `victoriametrics` | `VMScrapeConfig` (operator.victoriametrics.com/v1beta1) | `VMRule` (operator.victoriametrics.com/v1beta1) |
+
 {{ template "chart.valuesSection" . }}
+
+## Alerting Rules
+
+When `observability.rules.enabled` is set to `true`, the following alerts are created:
+
+| Alert | Severity | Description |
+|-------|----------|-------------|
+| `PVEExporterDown` | critical | Fires when the PVE exporter is down for more than 5 minutes |
+| `PveNodeDown` | critical | Fires when a PVE node is down for more than 5 minutes |

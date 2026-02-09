@@ -82,3 +82,54 @@ Create the name of the secret to use
 {{- define "prometheus-pve-exporter.servicePort" -}}
 {{ .Values.service.port }}
 {{- end }}
+
+{{/*
+Check if using VictoriaMetrics
+*/}}
+{{- define "prometheus-pve-exporter.isVictoriaMetrics" -}}
+{{- eq .Values.observability.type "victoriametrics" }}
+{{- end }}
+
+{{/*
+Get scrape config API version
+*/}}
+{{- define "prometheus-pve-exporter.scrapeConfigApiVersion" -}}
+{{- if eq .Values.observability.type "victoriametrics" -}}
+operator.victoriametrics.com/v1beta1
+{{- else -}}
+monitoring.coreos.com/v1alpha1
+{{- end }}
+{{- end }}
+
+{{/*
+Get scrape config kind
+*/}}
+{{- define "prometheus-pve-exporter.scrapeConfigKind" -}}
+{{- if eq .Values.observability.type "victoriametrics" -}}
+VMScrapeConfig
+{{- else -}}
+ScrapeConfig
+{{- end }}
+{{- end }}
+
+{{/*
+Get rule API version
+*/}}
+{{- define "prometheus-pve-exporter.ruleApiVersion" -}}
+{{- if eq .Values.observability.type "victoriametrics" -}}
+operator.victoriametrics.com/v1beta1
+{{- else -}}
+monitoring.coreos.com/v1
+{{- end }}
+{{- end }}
+
+{{/*
+Get rule kind
+*/}}
+{{- define "prometheus-pve-exporter.ruleKind" -}}
+{{- if eq .Values.observability.type "victoriametrics" -}}
+VMRule
+{{- else -}}
+PrometheusRule
+{{- end }}
+{{- end }}

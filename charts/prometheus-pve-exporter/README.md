@@ -1,7 +1,7 @@
 
 # prometheus-pve-exporter
 
-![Version: 1.0.3](https://img.shields.io/badge/Version-1.0.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.5.0](https://img.shields.io/badge/AppVersion-3.5.0-informational?style=flat-square)
+![Version: 1.1.0](https://img.shields.io/badge/Version-1.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.5.0](https://img.shields.io/badge/AppVersion-3.5.0-informational?style=flat-square)
 
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/prometheus-pve-exporter)](https://artifacthub.io/packages/search?repo=prometheus-pve-exporter)
 
@@ -22,6 +22,13 @@ Prometheus pve exporter helm chart for Kubernetes
 ## Requirements
 
 Kubernetes: `>=1.23.0-0`
+
+## Features
+
+- Supports **Prometheus Operator** (ScrapeConfig, PrometheusRule)
+- Supports **VictoriaMetrics Operator** (VMScrapeConfig, VMRule)
+- Multiple PVE targets and modules
+- Built-in alerting rules for PVE monitoring
 
 ## Install
 
@@ -55,7 +62,7 @@ pveum user token add monitoring@pve exporter -privsep 0
 ```
 
 The output will display important information about the token, such as the full token ID and its associated value.
-Here’s an example of what you should see:
+Here's an example of what you should see:
 
 ```shell
 ┌──────────────┬──────────────────────────────────────┐
@@ -73,16 +80,28 @@ Here’s an example of what you should see:
 - **info**: Additional token metadata, such as `privsep` (privacy separation), which in this case is set to 0.
 - **value**: The actual token value (`80051882-94e2-4fa4-bfdb-411235019fee`), which will be used for authentication.
 
-### Example Chart Configuration
+### Helm Installation
 
-Now that the user and token are set up, you need to configure helm chart.
-Below is an example of how to set up a Prometheus scrape configuration to monitor the Proxmox environment.
+```console
+helm install prometheus-pve-exporter oci://ghcr.io/alexmorbo/helm-charts/prometheus-pve-exporter
+```
 
-In this example, we configure Prometheus to monitor the Proxmox host located at `pve.homelab.local`.
-The configuration uses the token generated earlier for authentication.
+## Configuration Examples
+
+### Prometheus Operator (default)
 
 ```yaml
-prometheus: kube-prometheus-stack
+observability:
+  type: prometheus
+  scrape:
+    enabled: true
+    interval: 30s
+    selector:
+      release: kube-prometheus-stack
+  rules:
+    enabled: true
+    selector:
+      release: kube-prometheus-stack
 
 modules:
   default:
@@ -92,16 +111,63 @@ modules:
       - pve.homelab.local
 ```
 
-#### Explanation of the Configuration
+### VictoriaMetrics Operator
 
-- **prometheus**: The name of the Prometheus stack (in this case, `kube-prometheus-stack`).
-- **modules**: A section to define the authentication credentials for each target. In this case, we define a default module, which uses the previously created user (`monitoring@pve`) and token (`exporter`) for authentication. The `token_secret` is the generated token value (`80051882-94e2-4fa4-bfdb-411235019fee`).
-- **modules[].targets**: The list of hosts to scrape metrics from. Here, we specify the Proxmox host `pve.homelab.local`.
+```yaml
+observability:
+  type: victoriametrics
+  scrape:
+    enabled: true
+    interval: 30s
+    selector:
+      app.kubernetes.io/name: vmagent
+  rules:
+    enabled: true
+    selector:
+      app.kubernetes.io/name: vmalert
 
-### Helm
-```console
-helm install prometheus-pve-exporter oci://ghcr.io/alexmorbo/helm-charts/prometheus-pve-exporter
+modules:
+  default:
+    token_id: monitoring@pve!exporter
+    token_secret: 80051882-94e2-4fa4-bfdb-411235019fee
+    targets:
+      - pve.homelab.local
 ```
+
+### Multiple PVE Clusters
+
+```yaml
+observability:
+  type: prometheus
+  scrape:
+    enabled: true
+    selector:
+      release: kube-prometheus-stack
+
+modules:
+  datacenter1:
+    token_id: monitoring@pve!exporter
+    token_secret: secret-for-dc1
+    targets:
+      - pve1.dc1.local
+      - pve2.dc1.local
+      - pve3.dc1.local
+  datacenter2:
+    token_id: monitoring@pve!exporter
+    token_secret: secret-for-dc2
+    targets:
+      - pve1.dc2.local
+      - pve2.dc2.local
+```
+
+## Generated Resources
+
+Based on configuration, the chart creates:
+
+| observability.type | Scrape Config | Alerting Rules |
+|--------------------|---------------|----------------|
+| `prometheus` | `ScrapeConfig` (monitoring.coreos.com/v1alpha1) | `PrometheusRule` (monitoring.coreos.com/v1) |
+| `victoriametrics` | `VMScrapeConfig` (operator.victoriametrics.com/v1beta1) | `VMRule` (operator.victoriametrics.com/v1beta1) |
 
 ## Values
 
@@ -121,15 +187,21 @@ helm install prometheus-pve-exporter oci://ghcr.io/alexmorbo/helm-charts/prometh
 | modules | object | `{}` |  |
 | nameOverride | string | `""` |  |
 | nodeSelector | object | `{}` |  |
+| observability | object | `{"rules":{"enabled":false,"selector":{}},"scrape":{"enabled":true,"interval":"30s","selector":{"release":"kube-prometheus"}},"type":"prometheus"}` | Observability configuration for Prometheus Operator or VictoriaMetrics Operator |
+| observability.rules | object | `{"enabled":false,"selector":{}}` | Alerting rules (PrometheusRule or VMRule) |
+| observability.rules.enabled | bool | `false` | Enable alerting rules creation |
+| observability.rules.selector | object | `{}` | Additional labels for rule selection by Prometheus/VMAlert |
+| observability.scrape | object | `{"enabled":true,"interval":"30s","selector":{"release":"kube-prometheus"}}` | Scrape configuration (ScrapeConfig or VMScrapeConfig) |
+| observability.scrape.enabled | bool | `true` | Enable scrape config creation |
+| observability.scrape.interval | string | `"30s"` | Scrape interval |
+| observability.scrape.selector | object | `{"release":"kube-prometheus"}` | Label selector for Prometheus/VMAgent to pick up this scrape config |
+| observability.type | string | `"prometheus"` | Type of observability stack: "prometheus" or "victoriametrics" |
 | podAnnotations | object | `{}` |  |
 | podLabels | object | `{}` |  |
 | podSecurityContext.fsGroup | int | `1000` |  |
 | podSecurityContext.fsGroupChangePolicy | string | `"OnRootMismatch"` |  |
-| prometheus | string | `""` |  |
-| prometheusRule.enabled | bool | `false` |  |
 | readinessProbe | string | `nil` |  |
 | resources | object | `{}` |  |
-| scrapeInterval | string | `""` |  |
 | securityContext.allowPrivilegeEscalation | bool | `false` |  |
 | securityContext.capabilities.drop[0] | string | `"ALL"` |  |
 | securityContext.privileged | bool | `false` |  |
@@ -146,3 +218,12 @@ helm install prometheus-pve-exporter oci://ghcr.io/alexmorbo/helm-charts/prometh
 | serviceAccount.name | string | `""` | If not set and create is true, a name is generated using the fullname template |
 | tolerations | list | `[]` |  |
 | updateStrategy | object | `{"type":"RollingUpdate"}` | Deployment strategy |
+
+## Alerting Rules
+
+When `observability.rules.enabled` is set to `true`, the following alerts are created:
+
+| Alert | Severity | Description |
+|-------|----------|-------------|
+| `PVEExporterDown` | critical | Fires when the PVE exporter is down for more than 5 minutes |
+| `PveNodeDown` | critical | Fires when a PVE node is down for more than 5 minutes |

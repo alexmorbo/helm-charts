@@ -6,8 +6,28 @@ image:
   tag: ""
   sha: ""
 
-prometheus: ""
-scrapeInterval: ""
+# -- Observability configuration for Prometheus Operator or VictoriaMetrics Operator
+observability:
+  # -- Type of observability stack: "prometheus" or "victoriametrics"
+  type: prometheus
+
+  # -- Scrape configuration (ScrapeConfig or VMScrapeConfig)
+  scrape:
+    # -- Enable scrape config creation
+    enabled: true
+    # -- Scrape interval
+    interval: 30s
+    # -- Label selector for Prometheus/VMAgent to pick up this scrape config
+    selector:
+      release: kube-prometheus
+
+  # -- Alerting rules (PrometheusRule or VMRule)
+  rules:
+    # -- Enable alerting rules creation
+    enabled: false
+    # -- Additional labels for rule selection by Prometheus/VMAlert
+    selector: {}
+
 modules: {}
 #  default:
 #    token_id: ""
@@ -71,9 +91,6 @@ readinessProbe:
 #  httpGet:
 #    path: /
 #    port: http
-
-prometheusRule:
-  enabled: false
 
 resources: {}
 
