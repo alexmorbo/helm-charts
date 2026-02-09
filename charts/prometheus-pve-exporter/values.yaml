@@ -84,15 +84,25 @@ service:
   port: 9221
 
 livenessProbe:
-#  httpGet:
-#    path: /
-#    port: http
+  httpGet:
+    path: /
+    port: metrics
+  initialDelaySeconds: 10
+  periodSeconds: 30
 readinessProbe:
-#  httpGet:
-#    path: /
-#    port: http
+  httpGet:
+    path: /
+    port: metrics
+  initialDelaySeconds: 5
+  periodSeconds: 10
 
-resources: {}
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi
 
 nodeSelector: {}
 

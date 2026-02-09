@@ -1,13 +1,33 @@
 
 # prometheus-pve-exporter
 
-![Version: 1.1.0](https://img.shields.io/badge/Version-1.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.5.0](https://img.shields.io/badge/AppVersion-3.5.0-informational?style=flat-square)
-
-[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/prometheus-pve-exporter)](https://artifacthub.io/packages/search?repo=prometheus-pve-exporter)
+![Version: 1.2.0](https://img.shields.io/badge/Version-1.2.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.8.0](https://img.shields.io/badge/AppVersion-3.8.0-informational?style=flat-square)
 
 Prometheus pve exporter helm chart for Kubernetes
 
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/prometheus-pve-exporter)](https://artifacthub.io/packages/search?repo=prometheus-pve-exporter)
+
 **Homepage:** <https://github.com/alexmorbo/helm-charts>
+
+## Upgrade Notes
+
+> ⚠️ **Breaking Changes in prometheus-pve-exporter v3.6.0+**
+>
+> Several metrics have been converted from Gauge to Counter type. This may affect existing dashboards and alerting rules.
+> Review your Prometheus queries after upgrading.
+>
+> Key changes:
+> - Some metrics now use `_total` suffix (Counter convention)
+> - Rate/increase functions may be required for previously gauge-based queries
+
+## New Metrics (v3.6.0 - v3.8.0)
+
+| Version | Feature | Description |
+|---------|---------|-------------|
+| v3.6.0 | Subscription collector | Proxmox subscription status metrics |
+| v3.7.0 | Backup coverage | `pve_backup_coverage_*` metrics for backup monitoring |
+| v3.7.0 | API observability | `pve_api_call_duration_seconds`, `pve_api_call_errors_total` |
+| v3.8.0 | Bug fixes | Various stability improvements |
 
 ## Maintainers
 
@@ -160,6 +180,16 @@ modules:
       - pve2.dc2.local
 ```
 
+### Disable SSL Verification (Self-signed Certificates)
+
+If your Proxmox uses self-signed certificates, you can disable SSL verification:
+
+```yaml
+extraEnv:
+  - name: PVE_VERIFY_SSL
+    value: "false"
+```
+
 ## Generated Resources
 
 Based on configuration, the chart creates:
@@ -183,7 +213,10 @@ Based on configuration, the chart creates:
 | image.sha | string | `""` |  |
 | image.tag | string | `""` | Overrides the image tag whose default is the chart appVersion. |
 | imagePullSecrets | list | `[]` |  |
-| livenessProbe | string | `nil` |  |
+| livenessProbe.httpGet.path | string | `"/"` |  |
+| livenessProbe.httpGet.port | string | `"metrics"` |  |
+| livenessProbe.initialDelaySeconds | int | `10` |  |
+| livenessProbe.periodSeconds | int | `30` |  |
 | modules | object | `{}` |  |
 | nameOverride | string | `""` |  |
 | nodeSelector | object | `{}` |  |
@@ -200,8 +233,14 @@ Based on configuration, the chart creates:
 | podLabels | object | `{}` |  |
 | podSecurityContext.fsGroup | int | `1000` |  |
 | podSecurityContext.fsGroupChangePolicy | string | `"OnRootMismatch"` |  |
-| readinessProbe | string | `nil` |  |
-| resources | object | `{}` |  |
+| readinessProbe.httpGet.path | string | `"/"` |  |
+| readinessProbe.httpGet.port | string | `"metrics"` |  |
+| readinessProbe.initialDelaySeconds | int | `5` |  |
+| readinessProbe.periodSeconds | int | `10` |  |
+| resources.limits.cpu | string | `"200m"` |  |
+| resources.limits.memory | string | `"128Mi"` |  |
+| resources.requests.cpu | string | `"50m"` |  |
+| resources.requests.memory | string | `"64Mi"` |  |
 | securityContext.allowPrivilegeEscalation | bool | `false` |  |
 | securityContext.capabilities.drop[0] | string | `"ALL"` |  |
 | securityContext.privileged | bool | `false` |  |

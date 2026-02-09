@@ -4,11 +4,31 @@
 
 {{ template "chart.badgesSection" . }}
 
-{{ template "extra.artifacthub" . }}
-
 {{ template "chart.description" . }}
 
+{{ template "extra.artifacthub" . }}
+
 {{ template "chart.homepageLine" . }}
+
+## Upgrade Notes
+
+> ⚠️ **Breaking Changes in prometheus-pve-exporter v3.6.0+**
+>
+> Several metrics have been converted from Gauge to Counter type. This may affect existing dashboards and alerting rules.
+> Review your Prometheus queries after upgrading.
+>
+> Key changes:
+> - Some metrics now use `_total` suffix (Counter convention)
+> - Rate/increase functions may be required for previously gauge-based queries
+
+## New Metrics (v3.6.0 - v3.8.0)
+
+| Version | Feature | Description |
+|---------|---------|-------------|
+| v3.6.0 | Subscription collector | Proxmox subscription status metrics |
+| v3.7.0 | Backup coverage | `pve_backup_coverage_*` metrics for backup monitoring |
+| v3.7.0 | API observability | `pve_api_call_duration_seconds`, `pve_api_call_errors_total` |
+| v3.8.0 | Bug fixes | Various stability improvements |
 
 {{ template "chart.maintainersSection" . }}
 
@@ -151,6 +171,16 @@ modules:
     targets:
       - pve1.dc2.local
       - pve2.dc2.local
+```
+
+### Disable SSL Verification (Self-signed Certificates)
+
+If your Proxmox uses self-signed certificates, you can disable SSL verification:
+
+```yaml
+extraEnv:
+  - name: PVE_VERIFY_SSL
+    value: "false"
 ```
 
 ## Generated Resources
