@@ -1,7 +1,7 @@
 
 # prometheus-pve-exporter
 
-![Version: 1.3.0](https://img.shields.io/badge/Version-1.3.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.8.0](https://img.shields.io/badge/AppVersion-3.8.0-informational?style=flat-square)
+![Version: 1.4.0](https://img.shields.io/badge/Version-1.4.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.8.0](https://img.shields.io/badge/AppVersion-3.8.0-informational?style=flat-square)
 
 Prometheus pve exporter helm chart for Kubernetes
 
@@ -180,15 +180,22 @@ modules:
       - pve2.dc2.local
 ```
 
-### Disable SSL Verification (Self-signed Certificates)
+### SSL Verification and Timeout
 
-If your Proxmox uses self-signed certificates, you can disable SSL verification:
+Configure SSL verification and API timeout per module:
 
 ```yaml
-extraEnv:
-  - name: PVE_VERIFY_SSL
-    value: "false"
+modules:
+  default:
+    token_id: monitoring@pve!exporter
+    token_secret: 80051882-94e2-4fa4-bfdb-411235019fee
+    verify_ssl: false  # Disable SSL verification for self-signed certificates
+    timeout: 30        # API request timeout in seconds (default: 5)
+    targets:
+      - pve.homelab.local
 ```
+
+> **Note:** Increase `timeout` if you have many VMs/containers and experience timeout errors during metrics collection.
 
 ## Generated Resources
 

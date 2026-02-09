@@ -14,4 +14,7 @@ data:
         {{- if hasKey $module "verify_ssl" }}
         verify_ssl: {{ $module.verify_ssl }}
         {{- end }}
+        {{- if hasKey $module "timeout" }}
+        timeout: {{ $module.timeout }}
+        {{- end }}
     {{- end }}
