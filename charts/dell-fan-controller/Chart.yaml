@@ -27,4 +27,4 @@ annotations:
       url: https://github.com/alexmorbo/helm-charts/tree/master/charts/dell-fan-controller
   artifacthub.io/images: |
     - name: dell-fan-controller
-      image: alexmorbo/dell_idrac_fan_controller:v0.1.6-1
+      image: ghcr.io/alexmorbo/dell_idrac_fan_controller:v0.1.6-1

@@ -10,7 +10,7 @@ maintainers:
     email: alex@morbo.ru
 sources:
   - https://github.com/alexmorbo/helm-charts/tree/master/charts/slskd
-icon: https://djeqr6to3dedg.cloudfront.net/repo-logos/slskd/slskd/live/logo-1705713025282.png
+icon: https://raw.githubusercontent.com/alexmorbo/helm-charts/refs/heads/master/docs/assets/logo.svg
 home: https://github.com/alexmorbo/helm-charts
 keywords:
   - slskd

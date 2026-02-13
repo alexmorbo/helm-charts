@@ -10,7 +10,7 @@ maintainers:
     email: alex@morbo.ru
 sources:
   - https://github.com/alexmorbo/helm-charts/tree/master/charts/tubearchivist
-icon: https://raw.githubusercontent.com/tubearchivist/tubearchivist/master/assets/favicon-96x96.png
+icon: https://raw.githubusercontent.com/tubearchivist/tubearchivist/develop/assets/tube-archivist-logo-dark.png
 home: https://github.com/alexmorbo/helm-charts
 keywords:
   - tubearchivist

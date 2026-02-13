@@ -28,8 +28,8 @@ annotations:
       url: https://github.com/alexmorbo/helm-charts/tree/master/charts/qbittorrent
   artifacthub.io/images: |
     - name: qbittorrent
-      image: onedr0p/qbittorrent:4.6.6
+      image: ghcr.io/onedr0p/qbittorrent:4.6.6
     - name: exporter
-      image: martabal/qbittorrent-exporter:v1.13.2
+      image: ghcr.io/martabal/qbittorrent-exporter:v1.13.2
     - name: manage
-      image: stuffanthings/qbit_manage:v4.1.15
+      image: ghcr.io/stuffanthings/qbit_manage:v4.1.15
