@@ -1,0 +1,100 @@
+{{- if .Values.app.elasticsearch.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "tubearchivist.fullname" . }}-elasticsearch
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "tubearchivist.labels" . | nindent 4 }}
+    app.kubernetes.io/component: elasticsearch
+spec:
+  serviceName: {{ include "tubearchivist.fullname" . }}-elasticsearch
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "tubearchivist.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: elasticsearch
+  template:
+    metadata:
+      labels:
+        {{- include "tubearchivist.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: elasticsearch
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: elasticsearch
+          image: "{{ include "tubearchivist.imageRegistry" (dict "local" .Values.app.elasticsearch.image.registry "global" .Values.global.imageRegistry "default" "docker.io") }}/{{ .Values.app.elasticsearch.image.repository }}:{{ .Values.app.elasticsearch.image.tag }}"
+          imagePullPolicy: {{ .Values.app.elasticsearch.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 9200
+              protocol: TCP
+          env:
+            - name: discovery.type
+              value: "single-node"
+            - name: xpack.security.enabled
+              value: "true"
+            - name: ELASTIC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.app.elasticsearch.existingSecret }}
+                  name: {{ .Values.app.elasticsearch.existingSecret }}
+                  key: {{ .Values.app.elasticsearch.existingSecretPasswordKey }}
+                  {{- else }}
+                  name: {{ include "tubearchivist.fullname" . }}
+                  key: elasticsearch-password
+                  {{- end }}
+            - name: ES_JAVA_OPTS
+              value: {{ .Values.app.elasticsearch.javaOpts | quote }}
+            - name: path.repo
+              value: "/usr/share/elasticsearch/data/snapshot"
+            {{- with .Values.app.elasticsearch.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- with .Values.app.elasticsearch.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: data
+              mountPath: /usr/share/elasticsearch/data
+      {{- $nodeSelector := include "tubearchivist.nodeSelector" (dict "local" .Values.app.elasticsearch.nodeSelector "global" .Values.global.nodeSelector) }}
+      {{- if $nodeSelector }}
+      nodeSelector:
+        {{- $nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- $affinity := include "tubearchivist.affinity" (dict "local" .Values.app.elasticsearch.affinity "global" .Values.global.affinity) }}
+      {{- if $affinity }}
+      affinity:
+        {{- $affinity | nindent 8 }}
+      {{- end }}
+      {{- $tolerations := include "tubearchivist.tolerations" (dict "local" .Values.app.elasticsearch.tolerations "global" .Values.global.tolerations) }}
+      {{- if $tolerations }}
+      tolerations:
+        {{- $tolerations | nindent 8 }}
+      {{- end }}
+  {{- if .Values.app.elasticsearch.persistence.enabled }}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+        {{- with .Values.app.elasticsearch.persistence.annotations }}
+        annotations:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+      spec:
+        accessModes:
+          {{- toYaml .Values.app.elasticsearch.persistence.accessModes | nindent 10 }}
+        {{- if .Values.app.elasticsearch.persistence.storageClass }}
+        storageClassName: {{ .Values.app.elasticsearch.persistence.storageClass | quote }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.app.elasticsearch.persistence.size }}
+  {{- end }}
+{{- end }}

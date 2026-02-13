@@ -1,0 +1,239 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "tubearchivist.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "tubearchivist.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  strategy:
+    {{- include "tubearchivist.strategy" (dict "local" .Values.strategy "global" .Values.global.strategy) | nindent 4 }}
+  selector:
+    matchLabels:
+      {{- include "tubearchivist.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "tubearchivist.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "tubearchivist.serviceAccountName" . }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.extraInitContainers }}
+      initContainers:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: {{ include "tubearchivist.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          env:
+            # Required settings
+            - name: TA_HOST
+              value: {{ .Values.app.host | quote }}
+            - name: TZ
+              value: {{ .Values.app.timezone | quote }}
+            - name: HOST_UID
+              value: {{ .Values.app.hostUid | quote }}
+            - name: HOST_GID
+              value: {{ .Values.app.hostGid | quote }}
+            # Admin credentials
+            - name: TA_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ if .Values.app.admin.existingSecret }}{{ .Values.app.admin.existingSecret }}{{ else }}{{ include "tubearchivist.fullname" . }}{{ end }}
+                  key: {{ if .Values.app.admin.existingSecret }}{{ .Values.app.admin.existingSecretUsernameKey }}{{ else }}admin-username{{ end }}
+            - name: TA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ if .Values.app.admin.existingSecret }}{{ .Values.app.admin.existingSecret }}{{ else }}{{ include "tubearchivist.fullname" . }}{{ end }}
+                  key: {{ if .Values.app.admin.existingSecret }}{{ .Values.app.admin.existingSecretPasswordKey }}{{ else }}admin-password{{ end }}
+            # Redis connection
+            {{- if .Values.app.valkey.enabled }}
+            - name: REDIS_CON
+              value: "redis://{{ include "tubearchivist.fullname" . }}-valkey:6379"
+            {{- else if or .Values.app.valkeyExternal.url .Values.app.valkeyExternal.existingSecret }}
+            - name: REDIS_CON
+              valueFrom:
+                secretKeyRef:
+                  name: {{ if .Values.app.valkeyExternal.existingSecret }}{{ .Values.app.valkeyExternal.existingSecret }}{{ else }}{{ include "tubearchivist.fullname" . }}{{ end }}
+                  key: {{ .Values.app.valkeyExternal.existingSecretKey | default "valkey-url" }}
+            {{- end }}
+            # Elasticsearch connection
+            {{- if .Values.app.elasticsearch.enabled }}
+            - name: ES_URL
+              value: "http://{{ include "tubearchivist.fullname" . }}-elasticsearch:9200"
+            - name: ELASTIC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ if .Values.app.elasticsearch.existingSecret }}{{ .Values.app.elasticsearch.existingSecret }}{{ else }}{{ include "tubearchivist.fullname" . }}{{ end }}
+                  key: {{ if .Values.app.elasticsearch.existingSecret }}{{ .Values.app.elasticsearch.existingSecretPasswordKey }}{{ else }}elasticsearch-password{{ end }}
+            {{- else if .Values.app.elasticsearchExternal.url }}
+            - name: ES_URL
+              value: {{ .Values.app.elasticsearchExternal.url | quote }}
+            - name: ELASTIC_USER
+              value: {{ .Values.app.elasticsearchExternal.username | quote }}
+            - name: ELASTIC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ if .Values.app.elasticsearchExternal.existingSecret }}{{ .Values.app.elasticsearchExternal.existingSecret }}{{ else }}{{ include "tubearchivist.fullname" . }}{{ end }}
+                  key: {{ if .Values.app.elasticsearchExternal.existingSecret }}{{ .Values.app.elasticsearchExternal.existingSecretPasswordKey }}{{ else }}elasticsearch-external-password{{ end }}
+            {{- if .Values.app.elasticsearchExternal.disableVerifySsl }}
+            - name: ES_DISABLE_VERIFY_SSL
+              value: "true"
+            {{- end }}
+            {{- end }}
+            # yt-dlp auto update
+            {{- if .Values.app.ytdlpAutoUpdate }}
+            - name: TA_AUTO_UPDATE_YTDLP
+              value: {{ .Values.app.ytdlpAutoUpdate | quote }}
+            {{- end }}
+            # Auth mode
+            - name: TA_LOGIN_AUTH_MODE
+              value: {{ .Values.app.authMode | quote }}
+            # LDAP settings
+            {{- if .Values.app.ldap.enabled }}
+            - name: TA_LDAP
+              value: "true"
+            - name: TA_LDAP_SERVER_URI
+              value: {{ .Values.app.ldap.serverUri | quote }}
+            - name: TA_LDAP_BIND_DN
+              value: {{ .Values.app.ldap.bindDn | quote }}
+            - name: TA_LDAP_BIND_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ if .Values.app.ldap.existingSecret }}{{ .Values.app.ldap.existingSecret }}{{ else }}{{ include "tubearchivist.fullname" . }}{{ end }}
+                  key: {{ if .Values.app.ldap.existingSecret }}{{ .Values.app.ldap.existingSecretBindPasswordKey }}{{ else }}ldap-bind-password{{ end }}
+            {{- if .Values.app.ldap.disableCertCheck }}
+            - name: TA_LDAP_DISABLE_CERT_CHECK
+              value: "true"
+            {{- end }}
+            - name: TA_LDAP_USER_BASE
+              value: {{ .Values.app.ldap.userBase | quote }}
+            - name: TA_LDAP_USER_FILTER
+              value: {{ .Values.app.ldap.userFilter | quote }}
+            - name: TA_LDAP_USER_ATTR_MAP_USERNAME
+              value: {{ .Values.app.ldap.attrMap.username | quote }}
+            - name: TA_LDAP_USER_ATTR_MAP_PERSONALNAME
+              value: {{ .Values.app.ldap.attrMap.personalName | quote }}
+            - name: TA_LDAP_USER_ATTR_MAP_SURNAME
+              value: {{ .Values.app.ldap.attrMap.surname | quote }}
+            - name: TA_LDAP_USER_ATTR_MAP_EMAIL
+              value: {{ .Values.app.ldap.attrMap.email | quote }}
+            {{- if .Values.app.ldap.promoteToSuperuser }}
+            - name: TA_LDAP_PROMOTE_USERNAMES_TO_SUPERUSER
+              value: {{ .Values.app.ldap.promoteToSuperuser | quote }}
+            {{- end }}
+            {{- if .Values.app.ldap.promoteToStaff }}
+            - name: TA_LDAP_PROMOTE_USERNAMES_TO_STAFF
+              value: {{ .Values.app.ldap.promoteToStaff | quote }}
+            {{- end }}
+            {{- end }}
+            # Forward auth settings
+            {{- if .Values.app.forwardAuth.enabled }}
+            - name: TA_ENABLE_AUTH_PROXY
+              value: "true"
+            - name: TA_AUTH_PROXY_USERNAME_HEADER
+              value: {{ .Values.app.forwardAuth.usernameHeader | quote }}
+            {{- if .Values.app.forwardAuth.logoutUrl }}
+            - name: TA_AUTH_PROXY_LOGOUT_URL
+              value: {{ .Values.app.forwardAuth.logoutUrl | quote }}
+            {{- end }}
+            {{- end }}
+            # Advanced settings
+            {{- if .Values.app.disableStaticAuth }}
+            - name: DISABLE_STATIC_AUTH
+              value: "true"
+            {{- end }}
+            {{- if .Values.app.djangoDebug }}
+            - name: DJANGO_DEBUG
+              value: "true"
+            {{- end }}
+            # Extra env
+            {{- with .Values.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- with .Values.extraEnvFrom }}
+          envFrom:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            {{- if .Values.persistence.media.enabled }}
+            - name: media
+              mountPath: /youtube
+            {{- end }}
+            {{- if .Values.persistence.cache.enabled }}
+            - name: cache
+              mountPath: /cache
+            {{- end }}
+            {{- with .Values.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- with .Values.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        {{- if .Values.persistence.media.enabled }}
+        - name: media
+          persistentVolumeClaim:
+            claimName: {{ include "tubearchivist.pvcMediaName" . }}
+        {{- end }}
+        {{- if .Values.persistence.cache.enabled }}
+        - name: cache
+          persistentVolumeClaim:
+            claimName: {{ include "tubearchivist.pvcCacheName" . }}
+        {{- end }}
+        {{- with .Values.volumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- $nodeSelector := include "tubearchivist.nodeSelector" (dict "local" .Values.nodeSelector "global" .Values.global.nodeSelector) }}
+      {{- if $nodeSelector }}
+      nodeSelector:
+        {{- $nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- $affinity := include "tubearchivist.affinity" (dict "local" .Values.affinity "global" .Values.global.affinity) }}
+      {{- if $affinity }}
+      affinity:
+        {{- $affinity | nindent 8 }}
+      {{- end }}
+      {{- $tolerations := include "tubearchivist.tolerations" (dict "local" .Values.tolerations "global" .Values.global.tolerations) }}
+      {{- if $tolerations }}
+      tolerations:
+        {{- $tolerations | nindent 8 }}
+      {{- end }}

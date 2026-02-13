@@ -1,0 +1,128 @@
+Thank you for installing TubeArchivist!
+
+Release: {{ .Release.Name }}
+Namespace: {{ .Release.Namespace }}
+
+==============================================================================
+APPLICATION URL
+==============================================================================
+{{- if .Values.ingress.enabled }}
+Access TubeArchivist at:
+{{- range $host := .Values.ingress.hosts }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}
+{{- end }}
+{{- else if .Values.route.enabled }}
+Access TubeArchivist at:
+{{- range $hostname := .Values.route.hostnames }}
+  https://{{ $hostname }}
+{{- end }}
+{{- else }}
+To access TubeArchivist, run:
+  kubectl port-forward svc/{{ include "tubearchivist.fullname" . }} 8000:{{ .Values.service.port }} -n {{ .Release.Namespace }}
+Then open http://localhost:8000
+{{- end }}
+
+==============================================================================
+IMPORTANT NOTES
+==============================================================================
+1. TA_HOST Configuration:
+   {{- if .Values.app.host }}
+   TA_HOST is set to: {{ .Values.app.host }}
+   {{- else }}
+   WARNING: app.host is not configured! TubeArchivist requires TA_HOST to be set
+   correctly for the application to function. Update your values with:
+     app:
+       host: "http://your-tubearchivist-url"
+   {{- end }}
+
+2. Admin Credentials:
+   {{- if .Values.app.admin.existingSecret }}
+   Using credentials from existing secret: {{ .Values.app.admin.existingSecret }}
+   {{- else }}
+   Username: {{ .Values.app.admin.username | default "admin" }}
+   {{- if .Values.app.admin.password }}
+   Password: (configured in values)
+   {{- else }}
+   Password: Check the secret for auto-generated password:
+     kubectl get secret {{ include "tubearchivist.fullname" . }} -n {{ .Release.Namespace }} -o jsonpath='{.data.admin-password}' | base64 -d
+   {{- end }}
+   {{- end }}
+
+3. Redis/Valkey Connection:
+   {{- if .Values.valkey.enabled }}
+   Using built-in Valkey (Redis-compatible): {{ include "tubearchivist.valkeyHost" . }}:6379
+   {{- else if .Values.app.valkeyExternal.existingSecret }}
+   Using external Redis from secret: {{ .Values.app.valkeyExternal.existingSecret }}
+   {{- else if .Values.app.valkeyExternal.url }}
+   Using external Redis: {{ .Values.app.valkeyExternal.url }}
+   {{- else }}
+   WARNING: No Redis/Valkey configured! Enable valkey or configure valkeyExternal.
+   {{- end }}
+
+4. Elasticsearch Connection:
+   {{- if .Values.app.elasticsearch.enabled }}
+   Using built-in Elasticsearch: {{ include "tubearchivist.fullname" . }}-elasticsearch:9200
+   {{- if .Values.app.elasticsearch.existingSecret }}
+   Password from secret: {{ .Values.app.elasticsearch.existingSecret }}
+   {{- else if .Values.app.elasticsearch.password }}
+   Password: (configured in values)
+   {{- else }}
+   Password: Check the secret for auto-generated password:
+     kubectl get secret {{ include "tubearchivist.fullname" . }} -n {{ .Release.Namespace }} -o jsonpath='{.data.elasticsearch-password}' | base64 -d
+   {{- end }}
+   {{- else if .Values.app.elasticsearchExternal.url }}
+   Using external Elasticsearch: {{ .Values.app.elasticsearchExternal.url }}
+   {{- else }}
+   WARNING: No Elasticsearch configured! Enable elasticsearch or configure elasticsearchExternal.
+   {{- end }}
+
+==============================================================================
+FIRST TIME SETUP
+==============================================================================
+1. Access the web interface using the URL above
+
+2. Login with admin credentials (see above)
+
+3. Configure your first channel subscription:
+   - Navigate to "Downloads" -> "Add to download queue"
+   - Paste a YouTube channel or playlist URL
+   - Click "Subscribe" to add the channel
+
+4. Configure download settings:
+   - Navigate to "Settings" -> "Downloads"
+   - Adjust video quality, format, and scheduling options
+
+5. Start downloading:
+   - Navigate to "Downloads" and click "Start Download"
+   - Or wait for the scheduled download task to run
+
+==============================================================================
+PERSISTENCE
+==============================================================================
+{{- if .Values.persistence.media.enabled }}
+Media storage: {{ .Values.persistence.media.size }}
+  {{- if .Values.persistence.media.existingClaim }}
+  Using existing claim: {{ .Values.persistence.media.existingClaim }}
+  {{- else }}
+  PVC: {{ include "tubearchivist.pvcMediaName" . }}
+  {{- end }}
+{{- else }}
+WARNING: Media persistence is disabled! Videos will be lost on pod restart.
+{{- end }}
+{{- if .Values.persistence.cache.enabled }}
+Cache storage: {{ .Values.persistence.cache.size }}
+  {{- if .Values.persistence.cache.existingClaim }}
+  Using existing claim: {{ .Values.persistence.cache.existingClaim }}
+  {{- else }}
+  PVC: {{ include "tubearchivist.pvcCacheName" . }}
+  {{- end }}
+{{- else }}
+WARNING: Cache persistence is disabled! Thumbnails will be lost on pod restart.
+{{- end }}
+
+==============================================================================
+DOCUMENTATION
+==============================================================================
+For more information, visit: https://docs.tubearchivist.com/
+
+GitHub: https://github.com/tubearchivist/tubearchivist

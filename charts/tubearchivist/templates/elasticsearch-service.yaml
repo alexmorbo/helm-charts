@@ -1,0 +1,20 @@
+{{- if .Values.app.elasticsearch.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "tubearchivist.fullname" . }}-elasticsearch
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "tubearchivist.labels" . | nindent 4 }}
+    app.kubernetes.io/component: elasticsearch
+spec:
+  type: ClusterIP
+  ports:
+    - port: 9200
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "tubearchivist.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: elasticsearch
+{{- end }}

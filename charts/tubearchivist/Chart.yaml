@@ -1,0 +1,36 @@
+apiVersion: v2
+kubeVersion: ">=1.23.0-0"
+name: tubearchivist
+description: A Helm chart for TubeArchivist - self-hosted YouTube media server
+type: application
+version: 0.1.0
+appVersion: "v0.5.9"
+maintainers:
+  - name: alexmorbo
+    email: alex@morbo.ru
+sources:
+  - https://github.com/alexmorbo/helm-charts/tree/master/charts/tubearchivist
+icon: https://raw.githubusercontent.com/tubearchivist/tubearchivist/master/assets/favicon-96x96.png
+home: https://github.com/alexmorbo/helm-charts
+keywords:
+  - tubearchivist
+  - youtube
+  - media
+  - archiver
+  - self-hosted
+annotations:
+  artifacthub.io/license: MIT
+  artifacthub.io/links: |-
+    - name: App Source
+      url: https://github.com/tubearchivist/tubearchivist
+    - name: Chart Source
+      url: https://github.com/alexmorbo/helm-charts/tree/master/charts/tubearchivist
+  artifacthub.io/images: |
+    - name: tubearchivist
+      image: bbilly1/tubearchivist:v0.4.14
+
+dependencies:
+  - name: valkey
+    version: "0.9.3"
+    repository: https://valkey.io/valkey-helm/
+    condition: valkey.enabled
