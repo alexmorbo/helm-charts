@@ -19,8 +19,6 @@ jobs:
           fetch-depth: 0
       - name: Install helm
         uses: azure/setup-helm@v4
-        with:
-          version: v3.19.0
       - name: Install Oras
         uses: oras-project/setup-oras@v1
       - name: Login to GitHub Container Registry
@@ -87,8 +85,6 @@ jobs:
           fetch-depth: 0
       - name: Install helm
         uses: azure/setup-helm@v4
-        with:
-          version: v3.19.0
       - name: Install Oras
         uses: oras-project/setup-oras@v1
       - name: Install Cosign
