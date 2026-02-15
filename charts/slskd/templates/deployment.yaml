@@ -15,7 +15,6 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
         checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
         {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
@@ -48,13 +47,15 @@ spec:
               containerPort: 5030
               protocol: TCP
             - name: soulseek
-              containerPort: {{ .Values.app.soulseek.listenPort }}
+              containerPort: {{ include "slskd.soulseekPort" . }}
               protocol: TCP
           env:
             - name: TZ
               value: {{ .Values.app.timezone | quote }}
             - name: SLSKD_APP_DIR
               value: /app
+            - name: SLSKD_CONFIG
+              value: /config/slskd.yml
             - name: SLSKD_SLSK_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -83,8 +84,7 @@ spec:
               mountPath: /app
             {{- end }}
             - name: config
-              mountPath: /app/slskd.yml
-              subPath: slskd.yml
+              mountPath: /config
               readOnly: true
             {{- with .Values.volumeMounts }}
             {{- toYaml . | nindent 12 }}

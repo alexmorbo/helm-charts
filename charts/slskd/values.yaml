@@ -131,17 +131,6 @@ readinessProbe:
   failureThreshold: 3
 
 # ==============================================================================
-# Metrics (slskd native Prometheus metrics)
-# ==============================================================================
-metrics:
-  enabled: false
-  # Authentication for /metrics endpoint (separate from web UI auth)
-  authentication:
-    disabled: false
-    # Credentials stored in existingSecret or app.existingSecret
-    # keys: metrics-username, metrics-password
-
-# ==============================================================================
 # Monitoring (ServiceMonitor / VMServiceScrape)
 # ==============================================================================
 monitoring:
@@ -163,61 +152,62 @@ monitoring:
 # Application Configuration
 # ==============================================================================
 app:
-  timezone: "UTC"
-  remoteConfiguration: false
-  urlBase: ""
+  timezone: "UTC"                    # Pod-level TZ env var (not in slskd.yml)
+  existingSecret: ""                 # External K8s Secret reference
 
-  # Existing secret with soulseek-username, soulseek-password, api-key
-  existingSecret: ""
-
-  # Soulseek credentials (if not using existingSecret)
+  # Credentials — injected as env vars, NOT in ConfigMap
   soulseek:
     username: ""
     password: ""
-    listenPort: 50300
-    distributedNetwork:
-      enabled: true
-      childLimit: 50
+  apiKey: ""                         # Auto-generated if empty
 
-  # Web UI (if not using existingSecret for api-key)
-  web:
-    apiKey: ""
-    # Disable built-in authentication (use when behind auth proxy like Authentik)
-    authenticationDisabled: false
+  # Free-form slskd configuration → rendered as slskd.yml
+  # Native snake_case keys. Ref: https://github.com/slskd/slskd/blob/master/docs/config.md
+  config:
+    remote_configuration: false
 
-  # Directories (paths inside container)
-  directories:
-    downloads: /media/downloads/slskd
-    incomplete: /media/downloads/slskd/incomplete
+    soulseek:
+      listen_port: 50300
+      description: "Powered by helm chart - https://github.com/alexmorbo/helm-charts"
+      distributed_network:
+        disabled: false
+        child_limit: 25
 
-  # Shares configuration
-  shares:
+    web:
+      port: 5030
+
     directories:
-      - /media/music
-    filters:
-      - '\.ini$'
-      - 'Thumbs\.db$'
-      - '\.DS_Store$'
-      - '@eaDir'
-    cache:
-      storageMode: memory
-      retention: 10080
+      incomplete: /media/downloads/slskd/incomplete
+      downloads: /media/downloads/slskd
 
-  # Limits
-  limits:
-    upload:
-      slots: 10
-      speedLimit: 1000
-    download:
-      slots: 50
-      speedLimit: 0
+    shares:
+      directories:
+        - /media/music
+      filters:
+        - '\.ini$'
+        - 'Thumbs\.db$'
+        - '\.DS_Store$'
+        - '@eaDir'
+      cache:
+        storage_mode: memory
+        retention: 10080
 
-  # Retention (days, 0 = keep forever)
-  retention:
-    uploads: 0
-    downloads: 0
-    searches: 7
+    global:
+      upload:
+        slots: 20
+        speed_limit: 1000
+      download:
+        slots: 500
+        speed_limit: 1000
 
-  # Permissions
-  permissions:
-    fileMode: "0644"
+    retention:
+      transfers:
+        upload:
+          succeeded: 1440
+        download:
+          succeeded: 1440
+      search: 1440
+
+    permissions:
+      file:
+        mode: "644"

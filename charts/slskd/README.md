@@ -1,7 +1,7 @@
 
 # slskd
 
-![Version: 0.1.1](https://img.shields.io/badge/Version-0.1.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.24.3](https://img.shields.io/badge/AppVersion-0.24.3-informational?style=flat-square)
+![Version: 0.2.0](https://img.shields.io/badge/Version-0.2.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.24.3](https://img.shields.io/badge/AppVersion-0.24.3-informational?style=flat-square)
 
 A modern client-server application for the Soulseek file sharing network
 
@@ -26,34 +26,34 @@ Kubernetes: `>=1.23.0-0`
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | affinity | object | `{}` |  |
-| app.directories.downloads | string | `"/media/downloads/slskd"` |  |
-| app.directories.incomplete | string | `"/media/downloads/slskd/incomplete"` |  |
+| app.apiKey | string | `""` |  |
+| app.config.directories.downloads | string | `"/media/downloads/slskd"` |  |
+| app.config.directories.incomplete | string | `"/media/downloads/slskd/incomplete"` |  |
+| app.config.global.download.slots | int | `500` |  |
+| app.config.global.download.speed_limit | int | `1000` |  |
+| app.config.global.upload.slots | int | `20` |  |
+| app.config.global.upload.speed_limit | int | `1000` |  |
+| app.config.permissions.file.mode | string | `"644"` |  |
+| app.config.remote_configuration | bool | `false` |  |
+| app.config.retention.search | int | `1440` |  |
+| app.config.retention.transfers.download.succeeded | int | `1440` |  |
+| app.config.retention.transfers.upload.succeeded | int | `1440` |  |
+| app.config.shares.cache.retention | int | `10080` |  |
+| app.config.shares.cache.storage_mode | string | `"memory"` |  |
+| app.config.shares.directories[0] | string | `"/media/music"` |  |
+| app.config.shares.filters[0] | string | `"\\.ini$"` |  |
+| app.config.shares.filters[1] | string | `"Thumbs\\.db$"` |  |
+| app.config.shares.filters[2] | string | `"\\.DS_Store$"` |  |
+| app.config.shares.filters[3] | string | `"@eaDir"` |  |
+| app.config.soulseek.description | string | `"Powered by helm chart - https://github.com/alexmorbo/helm-charts"` |  |
+| app.config.soulseek.distributed_network.child_limit | int | `25` |  |
+| app.config.soulseek.distributed_network.disabled | bool | `false` |  |
+| app.config.soulseek.listen_port | int | `50300` |  |
+| app.config.web.port | int | `5030` |  |
 | app.existingSecret | string | `""` |  |
-| app.limits.download.slots | int | `50` |  |
-| app.limits.download.speedLimit | int | `0` |  |
-| app.limits.upload.slots | int | `10` |  |
-| app.limits.upload.speedLimit | int | `1000` |  |
-| app.permissions.fileMode | string | `"0644"` |  |
-| app.remoteConfiguration | bool | `false` |  |
-| app.retention.downloads | int | `0` |  |
-| app.retention.searches | int | `7` |  |
-| app.retention.uploads | int | `0` |  |
-| app.shares.cache.retention | int | `10080` |  |
-| app.shares.cache.storageMode | string | `"memory"` |  |
-| app.shares.directories[0] | string | `"/media/music"` |  |
-| app.shares.filters[0] | string | `"\\.ini$"` |  |
-| app.shares.filters[1] | string | `"Thumbs\\.db$"` |  |
-| app.shares.filters[2] | string | `"\\.DS_Store$"` |  |
-| app.shares.filters[3] | string | `"@eaDir"` |  |
-| app.soulseek.distributedNetwork.childLimit | int | `50` |  |
-| app.soulseek.distributedNetwork.enabled | bool | `true` |  |
-| app.soulseek.listenPort | int | `50300` |  |
 | app.soulseek.password | string | `""` |  |
 | app.soulseek.username | string | `""` |  |
 | app.timezone | string | `"UTC"` |  |
-| app.urlBase | string | `""` |  |
-| app.web.apiKey | string | `""` |  |
-| app.web.authenticationDisabled | bool | `false` |  |
 | extraEnv | list | `[]` |  |
 | extraEnvFrom | list | `[]` |  |
 | fullnameOverride | string | `""` |  |
@@ -76,8 +76,6 @@ Kubernetes: `>=1.23.0-0`
 | livenessProbe.httpGet.port | string | `"http"` |  |
 | livenessProbe.periodSeconds | int | `30` |  |
 | livenessProbe.timeoutSeconds | int | `10` |  |
-| metrics.authentication.disabled | bool | `false` |  |
-| metrics.enabled | bool | `false` |  |
 | monitoring.basicAuth.enabled | bool | `false` |  |
 | monitoring.basicAuth.secretName | string | `""` |  |
 | monitoring.enabled | bool | `false` |  |

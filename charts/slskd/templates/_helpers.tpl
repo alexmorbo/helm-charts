@@ -112,3 +112,10 @@ ConfigMap name
 {{- define "slskd.configMapName" -}}
 {{- include "slskd.fullname" . }}-config
 {{- end }}
+
+{{/*
+Soulseek listen port (safe nested access with default)
+*/}}
+{{- define "slskd.soulseekPort" -}}
+{{- dig "soulseek" "listen_port" 50300 .Values.app.config -}}
+{{- end }}
