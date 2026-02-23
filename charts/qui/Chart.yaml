@@ -1,0 +1,34 @@
+apiVersion: v2
+kubeVersion: ">=1.23.0-0"
+name: qui
+description: Qui helm chart for Kubernetes - A fast qBittorrent web UI with multi-instance support
+type: application
+version: 0.1.0
+appVersion: "v1.14.1"
+maintainers:
+  - name: AlexMorbo
+    email: alex@morbo.ru
+sources:
+  - https://github.com/alexmorbo/helm-charts/tree/master/charts/qui
+icon: https://raw.githubusercontent.com/alexmorbo/helm-charts/refs/heads/master/docs/assets/logo.svg
+home: https://github.com/alexmorbo/helm-charts
+keywords:
+  - qui
+  - qbittorrent
+  - torrent
+  - media
+  - autobrr
+annotations:
+  artifacthub.io/license: MIT
+  artifacthub.io/category: networking
+  artifacthub.io/changes: |
+    - kind: added
+      description: Initial chart release
+  artifacthub.io/links: |-
+    - name: App Source
+      url: https://github.com/autobrr/qui
+    - name: Chart Source
+      url: https://github.com/alexmorbo/helm-charts/tree/master/charts/qui
+  artifacthub.io/images: |
+    - name: qui
+      image: ghcr.io/autobrr/qui:v1.14.1
