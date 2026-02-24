@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "bird.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "bird.labels" . | nindent 4 }}
+data:
+  bird.conf: |
+    {{- .Values.config | nindent 4 }}
+  {{- range $key, $value := .Values.extraConfigs }}
+  {{ $key }}: |
+    {{- $value | nindent 4 }}
+  {{- end }}

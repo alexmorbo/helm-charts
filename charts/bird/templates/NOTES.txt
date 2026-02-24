@@ -1,0 +1,19 @@
+BIRD2 BGP routing daemon is deployed.
+
+{{- if .Values.hostNetwork }}
+Pod is running with hostNetwork: true — BGP peering will use the node's network interfaces.
+{{- else }}
+NOTE: hostNetwork is disabled. Enable it for BGP peering via host network:
+  hostNetwork: true
+{{- end }}
+
+{{- if .Values.healthCheck.enabled }}
+
+Health checks are enabled via `birdc show status`.
+{{- end }}
+
+To check BIRD status:
+  kubectl exec -n {{ .Release.Namespace }} deploy/{{ include "bird.fullname" . }} -- birdc show status
+
+To show BGP sessions:
+  kubectl exec -n {{ .Release.Namespace }} deploy/{{ include "bird.fullname" . }} -- birdc show protocols

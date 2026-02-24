@@ -1,0 +1,12 @@
+# Patterns to ignore
+.DS_Store
+.git/
+.gitignore
+.idea/
+*.swp
+*.bak
+*.tmp
+*.orig
+*~
+*.tgz
+.helmignore

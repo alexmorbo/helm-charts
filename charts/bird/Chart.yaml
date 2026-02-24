@@ -1,0 +1,30 @@
+apiVersion: v2
+kubeVersion: ">=1.23.0-0"
+name: bird
+description: BIRD2 BGP routing daemon
+type: application
+version: 0.1.0
+appVersion: "2.16"
+maintainers:
+  - name: AlexMorbo
+    email: alex@morbo.ru
+sources:
+  - https://github.com/alexmorbo/helm-charts/tree/master/charts/bird
+icon: https://raw.githubusercontent.com/alexmorbo/helm-charts/refs/heads/master/docs/assets/logo.svg
+home: https://github.com/alexmorbo/helm-charts
+keywords:
+  - bird
+  - bird2
+  - bgp
+  - routing
+  - network
+annotations:
+  artifacthub.io/license: MIT
+  artifacthub.io/links: |-
+    - name: App Source
+      url: https://github.com/akafeng/docker-bird
+    - name: Chart Source
+      url: https://github.com/alexmorbo/helm-charts/tree/master/charts/bird
+  artifacthub.io/images: |
+    - name: bird
+      image: ghcr.io/akafeng/bird:2.16

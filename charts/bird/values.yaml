@@ -1,0 +1,36 @@
+replicaCount: 1
+
+image:
+  registry: ghcr.io
+  repository: akafeng/bird
+  tag: ""
+  pullPolicy: IfNotPresent
+
+# BIRD configuration — passed as string, mounted to /etc/bird/bird.conf
+config: ""
+
+# Additional configs, mounted to /etc/bird/<key>
+# Useful for splitting static routes from the main config
+# Use include "/etc/bird/<key>"; in bird.conf
+extraConfigs: {}
+#   static_eu.conf: |
+#     ...
+#   static_ru.conf: |
+#     ...
+
+hostNetwork: false
+
+resources: {}
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+serviceAccount:
+  create: false
+
+podSecurityContext: {}
+securityContext: {}
+
+healthCheck:
+  enabled: true
