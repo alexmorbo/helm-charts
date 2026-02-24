@@ -1,7 +1,7 @@
 
 # slskd
 
-![Version: 0.2.0](https://img.shields.io/badge/Version-0.2.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.24.3](https://img.shields.io/badge/AppVersion-0.24.3-informational?style=flat-square)
+![Version: 0.2.1](https://img.shields.io/badge/Version-0.2.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.24.3](https://img.shields.io/badge/AppVersion-0.24.3-informational?style=flat-square)
 
 A modern client-server application for the Soulseek file sharing network
 
@@ -89,6 +89,7 @@ Kubernetes: `>=1.23.0-0`
 | nodeSelector | object | `{}` |  |
 | p2pService.annotations | object | `{}` |  |
 | p2pService.enabled | bool | `true` |  |
+| p2pService.labels | object | `{}` |  |
 | p2pService.port | int | `50300` |  |
 | p2pService.type | string | `"LoadBalancer"` |  |
 | persistence.accessModes[0] | string | `"ReadWriteOnce"` |  |
@@ -117,6 +118,7 @@ Kubernetes: `>=1.23.0-0`
 | securityContext.runAsNonRoot | bool | `true` |  |
 | securityContext.runAsUser | int | `1000` |  |
 | service.annotations | object | `{}` |  |
+| service.labels | object | `{}` |  |
 | service.port | int | `80` |  |
 | service.type | string | `"ClusterIP"` |  |
 | serviceAccount.annotations | object | `{}` |  |

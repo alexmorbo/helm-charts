@@ -3,7 +3,7 @@ kubeVersion: ">=1.23.0-0"
 name: slskd
 description: A modern client-server application for the Soulseek file sharing network
 type: application
-version: 0.2.0
+version: 0.2.1
 appVersion: "0.24.3"
 maintainers:
   - name: AlexMorbo
@@ -19,6 +19,9 @@ keywords:
   - music
   - file-sharing
 annotations:
+  artifacthub.io/changes: |
+    - kind: added
+      description: Added support for custom labels on Service resources via values (service.labels, p2pService.labels)
   artifacthub.io/license: MIT
   artifacthub.io/links: |-
     - name: App Source

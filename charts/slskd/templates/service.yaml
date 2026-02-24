@@ -5,6 +5,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "slskd.labels" . | nindent 4 }}
+    {{- with .Values.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
   {{- with .Values.service.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -27,6 +30,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "slskd.labels" . | nindent 4 }}
+    {{- with .Values.p2pService.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
   {{- with .Values.p2pService.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}

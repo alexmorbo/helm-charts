@@ -50,12 +50,14 @@ service:
   type: ClusterIP
   port: 80
   annotations: {}
+  labels: {}
 
 p2pService:
   enabled: true
   type: LoadBalancer
   port: 50300
   annotations: {}
+  labels: {}
 
 # ==============================================================================
 # Ingress
