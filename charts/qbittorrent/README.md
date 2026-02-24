@@ -1,7 +1,7 @@
 
 # qbittorrent
 
-![Version: 1.0.19](https://img.shields.io/badge/Version-1.0.19-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 4.6.6](https://img.shields.io/badge/AppVersion-4.6.6-informational?style=flat-square)
+![Version: 1.0.20](https://img.shields.io/badge/Version-1.0.20-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 4.6.6](https://img.shields.io/badge/AppVersion-4.6.6-informational?style=flat-square)
 
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/qbittorrent)](https://artifacthub.io/packages/search?repo=qbittorrent)
 
@@ -153,6 +153,7 @@ helm install qbittorrent oci://ghcr.io/alexmorbo/helm-charts/qbittorrent
 | qbittorrent.metrics.securityContext.runAsNonRoot | bool | `true` |  |
 | qbittorrent.metrics.securityContext.runAsUser | int | `65534` |  |
 | qbittorrent.metrics.securityContext.seccompProfile.type | string | `"RuntimeDefault"` |  |
+| qbittorrent.metrics.service.labels | object | `{}` | Labels to add to the metrics service |
 | qbittorrent.metrics.service.port | int | `8000` |  |
 | qbittorrent.metrics.serviceMonitor.enabled | bool | `false` |  |
 | qbittorrent.metrics.serviceMonitor.interval | string | `"30s"` |  |
@@ -181,9 +182,11 @@ helm install qbittorrent oci://ghcr.io/alexmorbo/helm-charts/qbittorrent
 | qbittorrent.securityContext.runAsUser | int | `65534` |  |
 | qbittorrent.securityContext.seccompProfile.type | string | `"RuntimeDefault"` |  |
 | qbittorrent.service.torrent.annotations | object | `{}` | Annotations to add to the torrent service |
+| qbittorrent.service.torrent.labels | object | `{}` | Labels to add to the torrent service |
 | qbittorrent.service.torrent.port | int | `8388` |  |
 | qbittorrent.service.torrent.type | string | `"ClusterIP"` |  |
 | qbittorrent.service.web.annotations | object | `{}` | Annotations to add to the web service |
+| qbittorrent.service.web.labels | object | `{}` | Labels to add to the web service |
 | qbittorrent.service.web.port | int | `80` |  |
 | qbittorrent.service.web.type | string | `"ClusterIP"` |  |
 | qbittorrent.serviceAccount.annotations | object | `{}` | Annotations to add to the service account |

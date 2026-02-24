@@ -4,6 +4,9 @@ metadata:
   name: {{ include "qbittorrent.fullname" . }}-web
   labels:
     {{- include "qbittorrent.labels" (dict "component" "qbittorrent" "Chart" .Chart "Release" .Release "Values" .Values) | nindent 4 }}
+    {{- with .Values.qbittorrent.service.web.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
   {{- with .Values.qbittorrent.service.web.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}

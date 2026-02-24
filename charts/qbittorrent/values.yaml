@@ -60,11 +60,15 @@ qbittorrent:
       port: 80
       # -- Annotations to add to the web service
       annotations: {}
+      # -- Labels to add to the web service
+      labels: {}
     torrent:
       type: ClusterIP
       port: 8388
       # -- Annotations to add to the torrent service
       annotations: {}
+      # -- Labels to add to the torrent service
+      labels: {}
 
   # -- Creating PVC to store configuration
   config:
@@ -208,6 +212,8 @@ qbittorrent:
 
     service:
       port: 8000
+      # -- Labels to add to the metrics service
+      labels: {}
 
     nodeSelector: { }
 
