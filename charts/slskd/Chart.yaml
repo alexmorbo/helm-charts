@@ -3,8 +3,8 @@ kubeVersion: ">=1.23.0-0"
 name: slskd
 description: A modern client-server application for the Soulseek file sharing network
 type: application
-version: 0.2.1
-appVersion: "0.24.3"
+version: 0.2.2
+appVersion: "0.24.5"
 maintainers:
   - name: AlexMorbo
     email: alex@morbo.ru
