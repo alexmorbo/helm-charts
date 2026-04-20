@@ -3,8 +3,8 @@ kubeVersion: ">=1.23.0-0"
 name: slskd
 description: A modern client-server application for the Soulseek file sharing network
 type: application
-version: 0.2.2
-appVersion: "0.24.5"
+version: 0.3.0
+appVersion: "0.25.1"
 maintainers:
   - name: AlexMorbo
     email: alex@morbo.ru
@@ -20,8 +20,10 @@ keywords:
   - file-sharing
 annotations:
   artifacthub.io/changes: |
-    - kind: added
-      description: Added support for custom labels on Service resources via values (service.labels, p2pService.labels)
+    - kind: changed
+      description: "BREAKING: Updated app to 0.25.1 - 'global' config key renamed to 'transfers', limits moved under transfers.upload.limits"
+    - kind: changed
+      description: Updated default config structure to match slskd 0.25.x format
   artifacthub.io/license: MIT
   artifacthub.io/links: |-
     - name: App Source
@@ -30,4 +32,4 @@ annotations:
       url: https://github.com/alexmorbo/helm-charts/tree/master/charts/slskd
   artifacthub.io/images: |
     - name: slskd
-      image: slskd/slskd:0.24.3
+      image: slskd/slskd:0.25.1

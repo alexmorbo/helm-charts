@@ -1,7 +1,7 @@
 
 # slskd
 
-![Version: 0.2.2](https://img.shields.io/badge/Version-0.2.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.24.5](https://img.shields.io/badge/AppVersion-0.24.5-informational?style=flat-square)
+![Version: 0.3.0](https://img.shields.io/badge/Version-0.3.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.25.1](https://img.shields.io/badge/AppVersion-0.25.1-informational?style=flat-square)
 
 A modern client-server application for the Soulseek file sharing network
 
@@ -29,10 +29,6 @@ Kubernetes: `>=1.23.0-0`
 | app.apiKey | string | `""` |  |
 | app.config.directories.downloads | string | `"/media/downloads/slskd"` |  |
 | app.config.directories.incomplete | string | `"/media/downloads/slskd/incomplete"` |  |
-| app.config.global.download.slots | int | `500` |  |
-| app.config.global.download.speed_limit | int | `1000` |  |
-| app.config.global.upload.slots | int | `20` |  |
-| app.config.global.upload.speed_limit | int | `1000` |  |
 | app.config.permissions.file.mode | string | `"644"` |  |
 | app.config.remote_configuration | bool | `false` |  |
 | app.config.retention.search | int | `1440` |  |
@@ -49,6 +45,10 @@ Kubernetes: `>=1.23.0-0`
 | app.config.soulseek.distributed_network.child_limit | int | `25` |  |
 | app.config.soulseek.distributed_network.disabled | bool | `false` |  |
 | app.config.soulseek.listen_port | int | `50300` |  |
+| app.config.transfers.download.slots | int | `500` |  |
+| app.config.transfers.download.speed_limit | int | `1000` |  |
+| app.config.transfers.upload.slots | int | `20` |  |
+| app.config.transfers.upload.speed_limit | int | `1000` |  |
 | app.config.web.port | int | `5030` |  |
 | app.existingSecret | string | `""` |  |
 | app.soulseek.password | string | `""` |  |

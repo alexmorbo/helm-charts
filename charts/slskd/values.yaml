@@ -194,7 +194,7 @@ app:
         storage_mode: memory
         retention: 10080
 
-    global:
+    transfers:
       upload:
         slots: 20
         speed_limit: 1000
