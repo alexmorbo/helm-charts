@@ -3,7 +3,7 @@ kubeVersion: ">=1.23.0-0"
 name: qbittorrent
 description: qbittorrent helm chart for Kubernetes
 type: application
-version: 1.1.0
+version: 1.1.1
 appVersion: "5.1.4"
 maintainers:
   - name: AlexMorbo
@@ -22,13 +22,15 @@ keywords:
 annotations:
   artifacthub.io/changes: |
     - kind: added
-      description: Gateway API HTTPRoute support via `qbittorrent.route` values
+      description: "Gateway API HTTPRoute support via `qbittorrent.route` values"
     - kind: changed
-      description: Migrated qbittorrent image from deprecated onedr0p/qbittorrent to home-operations/qbittorrent
+      description: "Migrated qbittorrent image from deprecated onedr0p/qbittorrent to home-operations/qbittorrent"
     - kind: changed
-      description: Bumped qbittorrent 4.6.6 → 5.1.4, qbit_manage v4.1.15 → v4.7.0, qbittorrent-exporter v1.13.2 → v1.13.4
+      description: "Bumped qbittorrent 4.6.6 to 5.1.4, qbit_manage v4.1.15 to v4.7.0, qbittorrent-exporter v1.13.2 to v1.13.4"
     - kind: fixed
-      description: qbit_manage init-container chown is now parameterized via `manage.securityContext.runAsUser/runAsGroup` instead of hardcoded `nobody:nobody`, supporting non-default user IDs
+      description: "qbit_manage init-container chown is now parameterized via manage.securityContext.runAsUser/runAsGroup instead of hardcoded nobody:nobody, supporting non-default user IDs"
+    - kind: fixed
+      description: "Added writable /tmp emptyDir for qbit_manage to support readOnlyRootFilesystem: true"
   artifacthub.io/license: MIT
   artifacthub.io/links: |-
     - name: App Source

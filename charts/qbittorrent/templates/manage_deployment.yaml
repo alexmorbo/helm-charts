@@ -70,6 +70,8 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /config
+            - name: tmp
+              mountPath: /tmp
           {{- with .Values.qbittorrent.volumeMounts }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
@@ -80,6 +82,8 @@ spec:
         - name: config
           persistentVolumeClaim:
             claimName: {{ include "manage.configPersistenceName" . }}
+        - name: tmp
+          emptyDir: {}
       {{- with .Values.qbittorrent.volumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
