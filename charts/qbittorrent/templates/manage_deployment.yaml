@@ -41,7 +41,7 @@ spec:
           args:
             - |
               cp /tmp/config.yml /config/config.yml
-              chown nobody:nobody /config/config.yml
+              chown {{ .Values.manage.securityContext.runAsUser }}:{{ .Values.manage.securityContext.runAsGroup }} /config/config.yml
           volumeMounts:
             - name: config-map
               mountPath: /tmp

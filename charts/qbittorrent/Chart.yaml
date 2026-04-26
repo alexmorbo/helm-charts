@@ -3,8 +3,8 @@ kubeVersion: ">=1.23.0-0"
 name: qbittorrent
 description: qbittorrent helm chart for Kubernetes
 type: application
-version: 1.0.20
-appVersion: "4.6.6"
+version: 1.1.0
+appVersion: "5.1.4"
 maintainers:
   - name: AlexMorbo
     email: alex@morbo.ru
@@ -22,7 +22,13 @@ keywords:
 annotations:
   artifacthub.io/changes: |
     - kind: added
-      description: Added support for custom labels on Service resources via values (service.web.labels, service.torrent.labels, metrics.service.labels)
+      description: Gateway API HTTPRoute support via `qbittorrent.route` values
+    - kind: changed
+      description: Migrated qbittorrent image from deprecated onedr0p/qbittorrent to home-operations/qbittorrent
+    - kind: changed
+      description: Bumped qbittorrent 4.6.6 → 5.1.4, qbit_manage v4.1.15 → v4.7.0, qbittorrent-exporter v1.13.2 → v1.13.4
+    - kind: fixed
+      description: qbit_manage init-container chown is now parameterized via `manage.securityContext.runAsUser/runAsGroup` instead of hardcoded `nobody:nobody`, supporting non-default user IDs
   artifacthub.io/license: MIT
   artifacthub.io/links: |-
     - name: App Source
@@ -31,8 +37,8 @@ annotations:
       url: https://github.com/alexmorbo/helm-charts/tree/master/charts/qbittorrent
   artifacthub.io/images: |
     - name: qbittorrent
-      image: ghcr.io/onedr0p/qbittorrent:4.6.6
+      image: ghcr.io/home-operations/qbittorrent:5.1.4
     - name: exporter
-      image: ghcr.io/martabal/qbittorrent-exporter:v1.13.2
+      image: ghcr.io/martabal/qbittorrent-exporter:v1.13.4
     - name: manage
-      image: ghcr.io/stuffanthings/qbit_manage:v4.1.15
+      image: ghcr.io/stuffanthings/qbit_manage:v4.7.0

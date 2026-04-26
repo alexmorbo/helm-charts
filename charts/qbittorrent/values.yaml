@@ -3,7 +3,7 @@ qbittorrent:
 
   image:
     registry: ghcr.io
-    repository: onedr0p/qbittorrent
+    repository: home-operations/qbittorrent
     pullPolicy: IfNotPresent
     # -- Overrides the image tag whose default is the chart appVersion.
     tag: ""
@@ -103,6 +103,16 @@ qbittorrent:
     #    hosts:
     #      - chart-example.local
 
+  # -- Gateway API HTTPRoute
+  route:
+    enabled: false
+    parentRefs:
+      - name: gateway
+        namespace: gateway-system
+    hostnames: []
+    annotations: {}
+    labels: {}
+
   resources: {}
     # We usually recommend not to specify default resources and to leave this as a conscious
     # choice for the user. This also increases chances charts run on environments with little
@@ -160,7 +170,7 @@ qbittorrent:
       registry: ghcr.io
       repository: martabal/qbittorrent-exporter
       pullPolicy: IfNotPresent
-      tag: "v1.13.2"
+      tag: "v1.13.4"
       sha: ""
     # -- qBittorrent connection settings
     qbittorrent:
@@ -261,7 +271,7 @@ manage:
     registry: ghcr.io
     repository: stuffanthings/qbit_manage
     pullPolicy: IfNotPresent
-    tag: "v4.1.15"
+    tag: "v4.7.0"
     sha: ""
 
   imagePullSecrets: [ ]

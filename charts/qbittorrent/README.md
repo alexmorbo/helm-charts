@@ -1,7 +1,7 @@
 
 # qbittorrent
 
-![Version: 1.0.20](https://img.shields.io/badge/Version-1.0.20-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 4.6.6](https://img.shields.io/badge/AppVersion-4.6.6-informational?style=flat-square)
+![Version: 1.1.0](https://img.shields.io/badge/Version-1.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 5.1.4](https://img.shields.io/badge/AppVersion-5.1.4-informational?style=flat-square)
 
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/qbittorrent)](https://artifacthub.io/packages/search?repo=qbittorrent)
 
@@ -53,7 +53,7 @@ helm install qbittorrent oci://ghcr.io/alexmorbo/helm-charts/qbittorrent
 | manage.image.registry | string | `"ghcr.io"` |  |
 | manage.image.repository | string | `"stuffanthings/qbit_manage"` |  |
 | manage.image.sha | string | `""` |  |
-| manage.image.tag | string | `"v4.1.15"` |  |
+| manage.image.tag | string | `"v4.7.0"` |  |
 | manage.imagePullSecrets | list | `[]` |  |
 | manage.nodeSelector | object | `{}` |  |
 | manage.persistence.accessModes | list | `["ReadWriteOnce"]` | Access modes of persistent disk |
@@ -94,7 +94,7 @@ helm install qbittorrent oci://ghcr.io/alexmorbo/helm-charts/qbittorrent
 | qbittorrent.gluetun | object | `{"enabled":true,"extraEnv":[],"extraEnvFrom":[],"image":{"pullPolicy":"IfNotPresent","registry":"docker.io","repository":"qmcgaw/gluetun","sha":"","tag":"v3.40.0"},"resources":{"limits":{"squat.ai/tun":1}},"securityContext":{"capabilities":{"add":["NET_ADMIN"]}},"volumeMounts":[]}` | Gluetun sidecar |
 | qbittorrent.image.pullPolicy | string | `"IfNotPresent"` |  |
 | qbittorrent.image.registry | string | `"ghcr.io"` |  |
-| qbittorrent.image.repository | string | `"onedr0p/qbittorrent"` |  |
+| qbittorrent.image.repository | string | `"home-operations/qbittorrent"` |  |
 | qbittorrent.image.sha | string | `""` |  |
 | qbittorrent.image.tag | string | `""` | Overrides the image tag whose default is the chart appVersion. |
 | qbittorrent.imagePullSecrets | list | `[]` |  |
@@ -113,7 +113,7 @@ helm install qbittorrent oci://ghcr.io/alexmorbo/helm-charts/qbittorrent
 | qbittorrent.metrics.image.registry | string | `"ghcr.io"` |  |
 | qbittorrent.metrics.image.repository | string | `"martabal/qbittorrent-exporter"` |  |
 | qbittorrent.metrics.image.sha | string | `""` |  |
-| qbittorrent.metrics.image.tag | string | `"v1.13.2"` |  |
+| qbittorrent.metrics.image.tag | string | `"v1.13.4"` |  |
 | qbittorrent.metrics.imagePullSecrets | list | `[]` |  |
 | qbittorrent.metrics.livenessProbe.failureThreshold | int | `4` |  |
 | qbittorrent.metrics.livenessProbe.httpGet.path | string | `"/"` |  |
@@ -173,6 +173,7 @@ helm install qbittorrent oci://ghcr.io/alexmorbo/helm-charts/qbittorrent
 | qbittorrent.podSecurityContext.fsGroupChangePolicy | string | `"OnRootMismatch"` |  |
 | qbittorrent.replicaCount | int | `1` |  |
 | qbittorrent.resources | object | `{}` |  |
+| qbittorrent.route | object | `{"annotations":{},"enabled":false,"hostnames":[],"labels":{},"parentRefs":[{"name":"gateway","namespace":"gateway-system"}]}` | Gateway API HTTPRoute |
 | qbittorrent.securityContext.allowPrivilegeEscalation | bool | `false` |  |
 | qbittorrent.securityContext.capabilities.drop[0] | string | `"ALL"` |  |
 | qbittorrent.securityContext.privileged | bool | `false` |  |

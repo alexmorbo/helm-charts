@@ -1,0 +1,29 @@
+{{- if .Values.qbittorrent.route.enabled }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ include "qbittorrent.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "qbittorrent.labels" . | nindent 4 }}
+    {{- with .Values.qbittorrent.route.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.qbittorrent.route.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  parentRefs:
+    {{- toYaml .Values.qbittorrent.route.parentRefs | nindent 4 }}
+  hostnames:
+    {{- toYaml .Values.qbittorrent.route.hostnames | nindent 4 }}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: {{ include "qbittorrent.fullname" . }}-web
+          port: {{ .Values.qbittorrent.service.web.port }}
+{{- end }}
