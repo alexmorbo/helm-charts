@@ -46,6 +46,10 @@ jobs:
 
               if [ $oras_exit_code -ne 0 ]; then
                 helm dependency build "$chart_path"
+                if [ "$chart" = "paperless-ngx" ]; then
+                  helm template "$chart" "$chart_path" >/dev/null
+                  helm template "$chart" "$chart_path" --set postgresql.enabled=true >/dev/null
+                fi
                 helm package "$chart_path" --destination ./.cr-release-packages
               else
                 echo "No version change for $chart. Skipping."

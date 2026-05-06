@@ -1,7 +1,6 @@
-
 # paperless-ngx
 
-![Version: 0.1.2](https://img.shields.io/badge/Version-0.1.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.20.5](https://img.shields.io/badge/AppVersion-2.20.5-informational?style=flat-square)
+![Version: 0.2.0](https://img.shields.io/badge/Version-0.2.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.20.5](https://img.shields.io/badge/AppVersion-2.20.5-informational?style=flat-square)
 
 Paperless-ngx helm chart for Kubernetes - Document management system
 
@@ -14,6 +13,7 @@ Paperless-ngx helm chart for Kubernetes - Document management system
 - **Gotenberg** - Document conversion (HTML to PDF, Office to PDF)
 - **Paperless-AI** - AI-powered document tagging and classification
 - **Valkey** - Built-in Redis-compatible cache (optional)
+- **PostgreSQL** - Optional bundled database via the CloudPirates PostgreSQL chart
 - **Flower** - Celery task monitoring UI
 - **Prometheus Monitoring** - Exporters for Paperless and Valkey metrics
 - **OIDC/SSO** - Single sign-on integration (Keycloak, etc.)
@@ -45,7 +45,8 @@ Paperless-ngx helm chart for Kubernetes - Document management system
          │
          ▼
 ┌─────────────────────────────────┐
-│     External PostgreSQL DB      │
+│ External or bundled PostgreSQL  │
+│     (CloudPirates subchart)     │
 └─────────────────────────────────┘
 ```
 
@@ -57,6 +58,7 @@ Paperless-ngx helm chart for Kubernetes - Document management system
 |-----------|-------------|---------|
 | **Paperless-ngx** | Document management system with OCR | Enabled |
 | **Valkey** | Redis-compatible in-memory cache | Enabled |
+| **PostgreSQL** | Database, optionally deployed via CloudPirates subchart | Disabled |
 
 ### Optional Components
 
@@ -66,6 +68,7 @@ Paperless-ngx helm chart for Kubernetes - Document management system
 | **Gotenberg** | Document conversion service | `gotenberg.enabled=true` |
 | **Paperless-AI** | AI-powered document processing | `paperlessAi.enabled=true` |
 | **Flower** | Celery monitoring UI | `flower.enabled=true` |
+| **PostgreSQL** | Bundled PostgreSQL database | `postgresql.enabled=true` |
 
 ### Monitoring Stack
 
@@ -82,8 +85,35 @@ helm install paperless-ngx oci://ghcr.io/alexmorbo/helm-charts/paperless-ngx
 ```
 
 ## Quick Start
+### PostgreSQL options
 
-### Minimal Installation
+By default, this chart expects an existing PostgreSQL database. The existing `app.database.*` configuration remains unchanged when `postgresql.enabled=false`.
+
+Alternatively, enable the bundled CloudPirates PostgreSQL dependency:
+
+```yaml
+postgresql:
+  enabled: true
+```
+
+When `postgresql.enabled=true` and `app.database.host` is empty, the chart derives the Paperless database connection from the PostgreSQL dependency:
+
+- `PAPERLESS_DBHOST` from the PostgreSQL dependency fullname
+- `PAPERLESS_DBPORT` from `postgresql.service.port`, defaulting to `5432`
+- `PAPERLESS_DBNAME` from `postgresql.customUser.database`
+- `PAPERLESS_DBUSER` from `postgresql.customUser.name`
+- `PAPERLESS_DBPASS` from the CloudPirates custom-user credentials Secret
+
+Database password Secret precedence:
+
+1. If `app.database.existingSecret` is set, it is always used.
+2. Else if `postgresql.enabled=true`, the chart uses the CloudPirates custom-user Secret, normally `<postgresql fullname>-custom-user-credentials` with key `CUSTOM_PASSWORD`.
+3. Else if `app.database.password` is set, this chart creates and uses its own `db-password` Secret.
+4. Else no `PAPERLESS_DBPASS` environment variable is rendered.
+
+The bundled PostgreSQL dependency is disabled by default to avoid changing existing installs. The chart pins PostgreSQL to an upstream-supported major version via `postgresql.image.tag` until paperless-ngx validates newer PostgreSQL releases.
+
+### Minimal Installation with external PostgreSQL
 
 ```yaml
 # values.yaml
@@ -92,6 +122,7 @@ app:
   database:
     host: "postgres.example.com"
     existingSecret: "paperless-db-secret"
+  # Or set postgresql.enabled=true to deploy the bundled database.
 
 ingress:
   enabled: true
@@ -101,6 +132,34 @@ ingress:
         - path: /
           pathType: Prefix
 ```
+
+### Minimal Installation with bundled PostgreSQL
+
+```yaml
+# values.yaml
+app:
+  url: "https://paperless.example.com"
+
+postgresql:
+  enabled: true
+
+ingress:
+  enabled: true
+  hosts:
+    - host: paperless.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+```
+
+Set a deterministic Paperless database password from CI if desired:
+
+```console
+helm upgrade --install paperless-ngx oci://ghcr.io/alexmorbo/helm-charts/paperless-ngx \
+  --set postgresql.customUser.password="$POSTGRES_PASSWORD"
+```
+
+Set `postgresql.auth.password` as well if you need a deterministic PostgreSQL superuser password.
 
 ### Full Installation with All Features
 
@@ -221,6 +280,7 @@ Kubernetes: `>=1.23.0-0`
 | Repository | Name | Version |
 |------------|------|---------|
 | https://valkey.io/valkey-helm/ | valkey | 0.x.x |
+| oci://registry-1.docker.io/cloudpirates | postgresql(postgres) | ~0.19.0 |
 
 ## Values
 
@@ -269,10 +329,10 @@ Kubernetes: `>=1.23.0-0`
 | livenessProbe.httpGet.port | string | `"http"` |  |
 | livenessProbe.periodSeconds | int | `10` |  |
 | livenessProbe.timeoutSeconds | int | `5` |  |
-| monitoring | object | `{"enabled":false,"interval":"30s","kubectl":{"pullPolicy":"IfNotPresent","registry":"","repository":"alpine/kubectl","tag":""},"labels":{},"namespace":"","paperlessExporter":{"affinity":{},"collectors":[],"enabled":true,"existingSecret":"","image":{"pullPolicy":"IfNotPresent","registry":"","repository":"hansmi/prometheus-paperless-exporter","tag":"v0.0.9"},"nodeSelector":{},"port":8081,"resources":{},"secretKey":"api-token","tolerations":[]},"path":"/metrics","scrapeTimeout":"10s","type":"ServiceMonitor","valkeyExporter":{"affinity":{},"enabled":true,"image":{"pullPolicy":"IfNotPresent","registry":"","repository":"oliver006/redis_exporter","tag":"v1.80.1"},"nodeSelector":{},"port":9121,"resources":{},"tolerations":[]}}` | Monitoring configuration |
-| monitoring.kubectl | object | `{"pullPolicy":"IfNotPresent","registry":"","repository":"alpine/kubectl","tag":""}` | kubectl image for init containers and jobs |
+| monitoring | object | `{"enabled":false,"interval":"30s","kubectl":{"pullPolicy":"IfNotPresent","registry":"","repository":"alpine/kubectl","tag":"1.35.3"},"labels":{},"namespace":"","paperlessExporter":{"affinity":{},"collectors":[],"enabled":true,"existingSecret":"","image":{"pullPolicy":"IfNotPresent","registry":"","repository":"hansmi/prometheus-paperless-exporter","tag":"v0.0.9"},"nodeSelector":{},"port":8081,"resources":{},"secretKey":"api-token","tolerations":[]},"path":"/metrics","scrapeTimeout":"10s","type":"ServiceMonitor","valkeyExporter":{"affinity":{},"enabled":true,"image":{"pullPolicy":"IfNotPresent","registry":"","repository":"oliver006/redis_exporter","tag":"v1.80.1"},"nodeSelector":{},"port":9121,"resources":{},"tolerations":[]}}` | Monitoring configuration |
+| monitoring.kubectl | object | `{"pullPolicy":"IfNotPresent","registry":"","repository":"alpine/kubectl","tag":"1.35.3"}` | kubectl image for init containers and jobs |
 | monitoring.kubectl.registry | string | `""` | Registry (falls back to global.imageRegistry, then to docker.io) |
-| monitoring.kubectl.tag | string | `""` | Tag (empty = auto-detect from cluster version) |
+| monitoring.kubectl.tag | string | `"1.35.3"` | Tag (empty = auto-detect from cluster version) |
 | monitoring.paperlessExporter | object | `{"affinity":{},"collectors":[],"enabled":true,"existingSecret":"","image":{"pullPolicy":"IfNotPresent","registry":"","repository":"hansmi/prometheus-paperless-exporter","tag":"v0.0.9"},"nodeSelector":{},"port":8081,"resources":{},"secretKey":"api-token","tolerations":[]}` | Paperless exporter (prometheus-paperless-exporter) Exports metrics from Paperless-ngx via REST API Token is automatically created via post-install Job (creates "monitoring" user) |
 | monitoring.paperlessExporter.collectors | list | `[]` | Collectors to enable (empty = all). Options: tag, correspondent, document_type, storage_path, task, log, group, user, document, status, statistics, remote_version |
 | monitoring.paperlessExporter.existingSecret | string | `""` | Existing secret with API token (if set, disables auto-creation) |
@@ -327,6 +387,20 @@ Kubernetes: `>=1.23.0-0`
 | podLabels | object | `{}` |  |
 | podSecurityContext.fsGroup | int | `1000` |  |
 | podSecurityContext.fsGroupChangePolicy | string | `"OnRootMismatch"` |  |
+| postgresql | object | `{"auth":{"database":"","existingSecret":"","password":"","secretKeys":{"adminPasswordKey":"postgres-password"},"username":""},"customUser":{"database":"paperless","existingSecret":"","name":"paperless","password":"","secretKeys":{"database":"CUSTOM_DB","name":"CUSTOM_USER","password":"CUSTOM_PASSWORD"}},"enabled":false,"fullnameOverride":"","image":{"tag":"16"},"metrics":{"enabled":false,"serviceMonitor":{"enabled":false}},"persistence":{"enabled":true,"size":"10Gi","storageClass":""},"replicaCount":1}` | Optional CloudPirates PostgreSQL dependency. Disabled by default so existing users can keep using an external PostgreSQL instance. |
+| postgresql.auth.database | string | `""` | Default database for the superuser. Empty defaults to the superuser name: |
+| postgresql.auth.existingSecret | string | `""` | Existing secret containing the superuser password. When set, the dependency does not create its own admin credentials secret: |
+| postgresql.auth.password | string | `""` | PostgreSQL superuser password. Auto-generated by the dependency when empty. Can be set from CI with --set postgresql.auth.password=... : |
+| postgresql.auth.secretKeys.adminPasswordKey | string | `"postgres-password"` | Key in auth.existingSecret containing the superuser password: |
+| postgresql.auth.username | string | `""` | PostgreSQL superuser name. Empty means the upstream postgres image uses its default postgres user: |
+| postgresql.customUser | object | `{"database":"paperless","existingSecret":"","name":"paperless","password":"","secretKeys":{"database":"CUSTOM_DB","name":"CUSTOM_USER","password":"CUSTOM_PASSWORD"}}` | Optional non-superuser account for Paperless. When enabled, the dependency creates a separate <fullname>-custom-user-credentials Secret containing CUSTOM_USER, CUSTOM_DB, and CUSTOM_PASSWORD: |
+| postgresql.customUser.existingSecret | string | `""` | Existing secret for the custom Paperless database user. When set, the dependency does not generate the custom-user credentials secret: |
+| postgresql.customUser.password | string | `""` | set postgresql.customUser.password=... |
+| postgresql.customUser.secretKeys.database | string | `"CUSTOM_DB"` | Key containing the custom PostgreSQL database name: |
+| postgresql.customUser.secretKeys.name | string | `"CUSTOM_USER"` | Key containing the custom PostgreSQL user name: |
+| postgresql.customUser.secretKeys.password | string | `"CUSTOM_PASSWORD"` | Key containing the custom PostgreSQL user password: |
+| postgresql.fullnameOverride | string | `""` | Override the PostgreSQL release fullname. Leave empty to use the dependency chart's default fullname. If enabled by this chart, this is useful for producing a predictable service name: |
+| postgresql.replicaCount | int | `1` | Number of PostgreSQL pods. The CloudPirates chart defaults to 1 and plain PostgreSQL does not provide multi-master replication by default: |
 | readinessProbe.failureThreshold | int | `3` |  |
 | readinessProbe.httpGet.path | string | `"/"` |  |
 | readinessProbe.httpGet.port | string | `"http"` |  |
