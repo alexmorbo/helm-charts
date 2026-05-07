@@ -13,7 +13,7 @@ Paperless-ngx helm chart for Kubernetes - Document management system
 - **Gotenberg** - Document conversion (HTML to PDF, Office to PDF)
 - **Paperless-AI** - AI-powered document tagging and classification
 - **Valkey** - Built-in Redis-compatible cache (optional)
-- **PostgreSQL** - Optional bundled database via the CloudPirates PostgreSQL chart
+- **PostgreSQL** - Optional bundled database via the `postgresql` dependency
 - **Flower** - Celery task monitoring UI
 - **Prometheus Monitoring** - Exporters for Paperless and Valkey metrics
 - **OIDC/SSO** - Single sign-on integration (Keycloak, etc.)
@@ -46,7 +46,7 @@ Paperless-ngx helm chart for Kubernetes - Document management system
          ▼
 ┌─────────────────────────────────┐
 │ External or bundled PostgreSQL  │
-│     (CloudPirates subchart)     │
+│    (`postgresql` subchart)    │
 └─────────────────────────────────┘
 ```
 
@@ -58,7 +58,7 @@ Paperless-ngx helm chart for Kubernetes - Document management system
 |-----------|-------------|---------|
 | **Paperless-ngx** | Document management system with OCR | Enabled |
 | **Valkey** | Redis-compatible in-memory cache | Enabled |
-| **PostgreSQL** | Database, optionally deployed via CloudPirates subchart | Disabled |
+| **PostgreSQL** | Database, optionally deployed via the `postgresql` dependency | Disabled |
 
 ### Optional Components
 
@@ -87,9 +87,7 @@ helm install paperless-ngx oci://ghcr.io/alexmorbo/helm-charts/paperless-ngx
 ## Quick Start
 ### PostgreSQL options
 
-By default, this chart expects an existing PostgreSQL database. The existing `app.database.*` configuration remains unchanged when `postgresql.enabled=false`.
-
-Alternatively, enable the bundled CloudPirates PostgreSQL dependency:
+By default, this chart expects an existing PostgreSQL database. The `app.database.*` configuration is active when `postgresql.enabled=false`. Alternatively, enable the bundled CloudPirates PostgreSQL dependency:
 
 ```yaml
 postgresql:
@@ -102,12 +100,12 @@ When `postgresql.enabled=true` and `app.database.host` is empty, the chart deriv
 - `PAPERLESS_DBPORT` from `postgresql.service.port`, defaulting to `5432`
 - `PAPERLESS_DBNAME` from `postgresql.customUser.database`
 - `PAPERLESS_DBUSER` from `postgresql.customUser.name`
-- `PAPERLESS_DBPASS` from the CloudPirates custom-user credentials Secret
+- `PAPERLESS_DBPASS` from the Secret named `<postgresql fullname>-custom-user-credentials`, using the key configured by `postgresql.customUser.secretKeys.password`; by default this key is `CUSTOM_PASSWORD`
 
 Database password Secret precedence:
 
 1. If `app.database.existingSecret` is set, it is always used.
-2. Else if `postgresql.enabled=true`, the chart uses the CloudPirates custom-user Secret, normally `<postgresql fullname>-custom-user-credentials` with key `CUSTOM_PASSWORD`.
+2. Else if `postgresql.enabled=true`, the chart uses the bundled PostgreSQL custom-user Secret, normally `<postgresql fullname>-custom-user-credentials` with key `CUSTOM_PASSWORD`.
 3. Else if `app.database.password` is set, this chart creates and uses its own `db-password` Secret.
 4. Else no `PAPERLESS_DBPASS` environment variable is rendered.
 
@@ -284,149 +282,149 @@ Kubernetes: `>=1.23.0-0`
 
 ## Values
 
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| affinity | object | `{}` |  |
-| app.csrfTrustedOrigins | string | `""` | CSRF trusted origins (comma-separated, defaults to app.url if set) |
-| app.database | object | `{"existingSecret":"","existingSecretKey":"password","host":"","name":"paperless","password":"","port":5432,"sslmode":"prefer","user":"paperless"}` | Database configuration |
-| app.dateOrder | string | `"DMY"` | Date order for parsing: DMY, MDY, YMD |
-| app.filenameFormat | string | `""` | Filename format template |
-| app.filenameFormatRemoveNone | bool | `true` | Remove 'none' placeholders from filename |
-| app.ocrLanguages | list | `[]` | OCR languages to install and use (e.g., ["rus", "eng", "deu"]) First language is primary. English is always included. |
-| app.ocrMode | string | `"skip"` | OCR mode: skip (default), redo, force |
-| app.oidc | object | `{"clientId":"","clientIdKey":"client-id","clientSecret":"","clientSecretKey":"client-secret","disableRegularLogin":false,"displayName":"SSO Login","enabled":false,"existingSecret":"","providerId":"keycloak","redirectLoginToSSO":false,"serverUrl":""}` | OIDC/SSO configuration |
-| app.taskWorkers | int | `1` | Number of task workers |
-| app.threadsPerWorker | int | `1` | Threads per worker |
-| app.timeZone | string | `""` | Timezone (e.g., Europe/Moscow, UTC) |
-| app.url | string | `""` | Public URL of paperless-ngx (e.g., https://paperless.example.com) |
-| app.valkey | object | `{"enabled":true,"prefix":""}` | Built-in Valkey (Redis) |
-| app.valkey.prefix | string | `""` | Prefix for Redis keys |
-| app.valkeyExternal | object | `{"existingSecret":"","existingSecretKey":"url","url":""}` | External Valkey/Redis (when app.valkey.enabled=false) |
-| extraEnv | list | `[]` | Environment variables to add to the pods |
-| extraEnvFrom | list | `[]` | Environment variables from secrets or configmaps to add to the pods |
-| extraInitContainers | list | `[]` | Additional init containers |
-| flower | object | `{"enabled":false,"ingress":{"annotations":{},"enabled":false,"hosts":[{"host":"flower.local","paths":[{"path":"/","pathType":"Prefix"}]}],"ingressClassName":"","tls":[]},"port":5555,"route":{"annotations":{},"enabled":false,"hostnames":["flower.local"],"labels":{},"parentRefs":[{"name":"gateway","namespace":"gateway-system"}]}}` | Flower (Celery monitoring) |
-| fullnameOverride | string | `""` |  |
-| global.imageRegistry | string | `""` | Global image registry (used as fallback for all components) |
-| global.strategy | object | `{"type":"Recreate"}` | Global deployment strategy (used as fallback for all components) |
-| gotenberg | object | `{"affinity":{},"enabled":false,"image":{"pullPolicy":"IfNotPresent","registry":"","repository":"gotenberg/gotenberg","tag":"8.25.1"},"nodeSelector":{},"port":3000,"resources":{},"strategy":{},"tolerations":[]}` | Gotenberg for document conversion |
-| gotenberg.image.registry | string | `""` | Registry (falls back to global.imageRegistry) |
-| gotenberg.strategy | object | `{}` | Strategy (falls back to global.strategy) |
-| image.pullPolicy | string | `"IfNotPresent"` |  |
-| image.registry | string | `""` | Image registry (falls back to global.imageRegistry, then to ghcr.io) |
-| image.repository | string | `"paperless-ngx/paperless-ngx"` |  |
-| image.tag | string | `""` | Overrides the image tag whose default is the chart appVersion. |
-| imagePullSecrets | list | `[]` |  |
-| ingress.annotations | object | `{}` |  |
-| ingress.enabled | bool | `false` |  |
-| ingress.hosts[0].host | string | `"paperless.local"` |  |
-| ingress.hosts[0].paths[0].path | string | `"/"` |  |
-| ingress.hosts[0].paths[0].pathType | string | `"Prefix"` |  |
-| ingress.ingressClassName | string | `""` |  |
-| ingress.tls | list | `[]` |  |
-| livenessProbe.failureThreshold | int | `3` |  |
-| livenessProbe.httpGet.path | string | `"/"` |  |
-| livenessProbe.httpGet.port | string | `"http"` |  |
-| livenessProbe.periodSeconds | int | `10` |  |
-| livenessProbe.timeoutSeconds | int | `5` |  |
-| monitoring | object | `{"enabled":false,"interval":"30s","kubectl":{"pullPolicy":"IfNotPresent","registry":"","repository":"alpine/kubectl","tag":"1.35.3"},"labels":{},"namespace":"","paperlessExporter":{"affinity":{},"collectors":[],"enabled":true,"existingSecret":"","image":{"pullPolicy":"IfNotPresent","registry":"","repository":"hansmi/prometheus-paperless-exporter","tag":"v0.0.9"},"nodeSelector":{},"port":8081,"resources":{},"secretKey":"api-token","tolerations":[]},"path":"/metrics","scrapeTimeout":"10s","type":"ServiceMonitor","valkeyExporter":{"affinity":{},"enabled":true,"image":{"pullPolicy":"IfNotPresent","registry":"","repository":"oliver006/redis_exporter","tag":"v1.80.1"},"nodeSelector":{},"port":9121,"resources":{},"tolerations":[]}}` | Monitoring configuration |
-| monitoring.kubectl | object | `{"pullPolicy":"IfNotPresent","registry":"","repository":"alpine/kubectl","tag":"1.35.3"}` | kubectl image for init containers and jobs |
-| monitoring.kubectl.registry | string | `""` | Registry (falls back to global.imageRegistry, then to docker.io) |
-| monitoring.kubectl.tag | string | `"1.35.3"` | Tag (empty = auto-detect from cluster version) |
-| monitoring.paperlessExporter | object | `{"affinity":{},"collectors":[],"enabled":true,"existingSecret":"","image":{"pullPolicy":"IfNotPresent","registry":"","repository":"hansmi/prometheus-paperless-exporter","tag":"v0.0.9"},"nodeSelector":{},"port":8081,"resources":{},"secretKey":"api-token","tolerations":[]}` | Paperless exporter (prometheus-paperless-exporter) Exports metrics from Paperless-ngx via REST API Token is automatically created via post-install Job (creates "monitoring" user) |
-| monitoring.paperlessExporter.collectors | list | `[]` | Collectors to enable (empty = all). Options: tag, correspondent, document_type, storage_path, task, log, group, user, document, status, statistics, remote_version |
-| monitoring.paperlessExporter.existingSecret | string | `""` | Existing secret with API token (if set, disables auto-creation) |
-| monitoring.paperlessExporter.image.registry | string | `""` | Registry (falls back to global.imageRegistry, then to ghcr.io) |
-| monitoring.paperlessExporter.secretKey | string | `"api-token"` | Key in the secret containing the API token |
-| monitoring.type | string | `"ServiceMonitor"` | Type of service monitor: ServiceMonitor (Prometheus) or VMServiceScrape (VictoriaMetrics) |
-| monitoring.valkeyExporter | object | `{"affinity":{},"enabled":true,"image":{"pullPolicy":"IfNotPresent","registry":"","repository":"oliver006/redis_exporter","tag":"v1.80.1"},"nodeSelector":{},"port":9121,"resources":{},"tolerations":[]}` | Valkey/Redis exporter Exports Redis-compatible metrics from Valkey |
-| monitoring.valkeyExporter.image.registry | string | `""` | Registry (falls back to global.imageRegistry, then to docker.io) |
-| nameOverride | string | `""` |  |
-| nodeSelector | object | `{}` |  |
-| paperlessAi.addProcessedTag | bool | `true` |  |
-| paperlessAi.affinity | object | `{}` |  |
-| paperlessAi.custom.apiKey | string | `""` |  |
-| paperlessAi.custom.existingSecret | string | `""` |  |
-| paperlessAi.custom.model | string | `""` |  |
-| paperlessAi.custom.secretKey | string | `"api-key"` |  |
-| paperlessAi.custom.url | string | `""` |  |
-| paperlessAi.enabled | bool | `false` |  |
-| paperlessAi.image.pullPolicy | string | `"IfNotPresent"` |  |
-| paperlessAi.image.registry | string | `""` | Registry (falls back to global.imageRegistry) |
-| paperlessAi.image.repository | string | `"clusterzx/paperless-ai"` |  |
-| paperlessAi.image.tag | string | `"3.0.9"` |  |
-| paperlessAi.ingress.annotations | object | `{}` |  |
-| paperlessAi.ingress.enabled | bool | `false` |  |
-| paperlessAi.ingress.host | string | `"paperless-ai.local"` |  |
-| paperlessAi.ingress.ingressClassName | string | `""` |  |
-| paperlessAi.ingress.tls | list | `[]` |  |
-| paperlessAi.nodeSelector | object | `{}` |  |
-| paperlessAi.ollama.model | string | `"llama3.2"` |  |
-| paperlessAi.ollama.url | string | `"http://ollama:11434"` |  |
-| paperlessAi.openai.apiKey | string | `""` |  |
-| paperlessAi.openai.existingSecret | string | `""` |  |
-| paperlessAi.openai.model | string | `"gpt-4o-mini"` |  |
-| paperlessAi.openai.secretKey | string | `"api-key"` |  |
-| paperlessAi.paperless.apiToken | string | `""` | API token (if not using existingSecret or useSharedToken) |
-| paperlessAi.paperless.existingSecret | string | `""` | Existing secret with API token (overrides useSharedToken) |
-| paperlessAi.paperless.secretKey | string | `"api-token"` |  |
-| paperlessAi.paperless.useSharedToken | bool | `true` | Use shared API token from monitoring (created automatically) |
-| paperlessAi.persistence.enabled | bool | `true` |  |
-| paperlessAi.persistence.existingClaim | string | `""` |  |
-| paperlessAi.persistence.size | string | `"1Gi"` |  |
-| paperlessAi.persistence.storageClass | string | `""` |  |
-| paperlessAi.processExistingDocuments | bool | `false` |  |
-| paperlessAi.processedTagName | string | `"ai-processed"` |  |
-| paperlessAi.provider | string | `"openai"` |  |
-| paperlessAi.resources | object | `{}` |  |
-| paperlessAi.scanInterval | string | `"*/30 * * * *"` |  |
-| paperlessAi.strategy | object | `{}` | Strategy (falls back to global.strategy) |
-| paperlessAi.tolerations | list | `[]` |  |
-| persistence | object | `{"accessModes":["ReadWriteOnce"],"annotations":{},"enabled":true,"existingClaim":"","size":"20Gi","storageClass":""}` | Persistence configuration (single PVC with subPaths) |
-| podAnnotations | object | `{}` |  |
-| podLabels | object | `{}` |  |
-| podSecurityContext.fsGroup | int | `1000` |  |
-| podSecurityContext.fsGroupChangePolicy | string | `"OnRootMismatch"` |  |
-| postgresql | object | `{"auth":{"database":"","existingSecret":"","password":"","secretKeys":{"adminPasswordKey":"postgres-password"},"username":""},"customUser":{"database":"paperless","existingSecret":"","name":"paperless","password":"","secretKeys":{"database":"CUSTOM_DB","name":"CUSTOM_USER","password":"CUSTOM_PASSWORD"}},"enabled":false,"fullnameOverride":"","image":{"tag":"16"},"metrics":{"enabled":false,"serviceMonitor":{"enabled":false}},"persistence":{"enabled":true,"size":"10Gi","storageClass":""},"replicaCount":1}` | Optional CloudPirates PostgreSQL dependency. Disabled by default so existing users can keep using an external PostgreSQL instance. |
-| postgresql.auth.database | string | `""` | Default database for the superuser. Empty defaults to the superuser name: |
-| postgresql.auth.existingSecret | string | `""` | Existing secret containing the superuser password. When set, the dependency does not create its own admin credentials secret: |
-| postgresql.auth.password | string | `""` | PostgreSQL superuser password. Auto-generated by the dependency when empty. Can be set from CI with --set postgresql.auth.password=... : |
-| postgresql.auth.secretKeys.adminPasswordKey | string | `"postgres-password"` | Key in auth.existingSecret containing the superuser password: |
-| postgresql.auth.username | string | `""` | PostgreSQL superuser name. Empty means the upstream postgres image uses its default postgres user: |
+| Key | Type | Default | Description                                                                                                                                                                                     |
+|-----|------|---------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| affinity | object | `{}` |                                                                                                                                                                                                 |
+| app.csrfTrustedOrigins | string | `""` | CSRF trusted origins (comma-separated, defaults to app.url if set)                                                                                                                              |
+| app.database | object | `{"existingSecret":"","existingSecretKey":"password","host":"","name":"paperless","password":"","port":5432,"sslmode":"prefer","user":"paperless"}` | Database configuration                                                                                                                                                                          |
+| app.dateOrder | string | `"DMY"` | Date order for parsing: DMY, MDY, YMD                                                                                                                                                           |
+| app.filenameFormat | string | `""` | Filename format template                                                                                                                                                                        |
+| app.filenameFormatRemoveNone | bool | `true` | Remove 'none' placeholders from filename                                                                                                                                                        |
+| app.ocrLanguages | list | `[]` | OCR languages to install and use (e.g., ["rus", "eng", "deu"]) First language is primary. English is always included.                                                                           |
+| app.ocrMode | string | `"skip"` | OCR mode: skip (default), redo, force                                                                                                                                                           |
+| app.oidc | object | `{"clientId":"","clientIdKey":"client-id","clientSecret":"","clientSecretKey":"client-secret","disableRegularLogin":false,"displayName":"SSO Login","enabled":false,"existingSecret":"","providerId":"keycloak","redirectLoginToSSO":false,"serverUrl":""}` | OIDC/SSO configuration                                                                                                                                                                          |
+| app.taskWorkers | int | `1` | Number of task workers                                                                                                                                                                          |
+| app.threadsPerWorker | int | `1` | Threads per worker                                                                                                                                                                              |
+| app.timeZone | string | `""` | Timezone (e.g., Europe/Moscow, UTC)                                                                                                                                                             |
+| app.url | string | `""` | Public URL of paperless-ngx (e.g., https://paperless.example.com)                                                                                                                               |
+| app.valkey | object | `{"enabled":true,"prefix":""}` | Built-in Valkey (Redis)                                                                                                                                                                         |
+| app.valkey.prefix | string | `""` | Prefix for Redis keys                                                                                                                                                                           |
+| app.valkeyExternal | object | `{"existingSecret":"","existingSecretKey":"url","url":""}` | External Valkey/Redis (when app.valkey.enabled=false)                                                                                                                                           |
+| extraEnv | list | `[]` | Environment variables to add to the pods                                                                                                                                                        |
+| extraEnvFrom | list | `[]` | Environment variables from secrets or configmaps to add to the pods                                                                                                                             |
+| extraInitContainers | list | `[]` | Additional init containers                                                                                                                                                                      |
+| flower | object | `{"enabled":false,"ingress":{"annotations":{},"enabled":false,"hosts":[{"host":"flower.local","paths":[{"path":"/","pathType":"Prefix"}]}],"ingressClassName":"","tls":[]},"port":5555,"route":{"annotations":{},"enabled":false,"hostnames":["flower.local"],"labels":{},"parentRefs":[{"name":"gateway","namespace":"gateway-system"}]}}` | Flower (Celery monitoring)                                                                                                                                                                      |
+| fullnameOverride | string | `""` |                                                                                                                                                                                                 |
+| global.imageRegistry | string | `""` | Global image registry (used as fallback for all components)                                                                                                                                     |
+| global.strategy | object | `{"type":"Recreate"}` | Global deployment strategy (used as fallback for all components)                                                                                                                                |
+| gotenberg | object | `{"affinity":{},"enabled":false,"image":{"pullPolicy":"IfNotPresent","registry":"","repository":"gotenberg/gotenberg","tag":"8.25.1"},"nodeSelector":{},"port":3000,"resources":{},"strategy":{},"tolerations":[]}` | Gotenberg for document conversion                                                                                                                                                               |
+| gotenberg.image.registry | string | `""` | Registry (falls back to global.imageRegistry)                                                                                                                                                   |
+| gotenberg.strategy | object | `{}` | Strategy (falls back to global.strategy)                                                                                                                                                        |
+| image.pullPolicy | string | `"IfNotPresent"` |                                                                                                                                                                                                 |
+| image.registry | string | `""` | Image registry (falls back to global.imageRegistry, then to ghcr.io)                                                                                                                            |
+| image.repository | string | `"paperless-ngx/paperless-ngx"` |                                                                                                                                                                                                 |
+| image.tag | string | `""` | Overrides the image tag whose default is the chart appVersion.                                                                                                                                  |
+| imagePullSecrets | list | `[]` |                                                                                                                                                                                                 |
+| ingress.annotations | object | `{}` |                                                                                                                                                                                                 |
+| ingress.enabled | bool | `false` |                                                                                                                                                                                                 |
+| ingress.hosts[0].host | string | `"paperless.local"` |                                                                                                                                                                                                 |
+| ingress.hosts[0].paths[0].path | string | `"/"` |                                                                                                                                                                                                 |
+| ingress.hosts[0].paths[0].pathType | string | `"Prefix"` |                                                                                                                                                                                                 |
+| ingress.ingressClassName | string | `""` |                                                                                                                                                                                                 |
+| ingress.tls | list | `[]` |                                                                                                                                                                                                 |
+| livenessProbe.failureThreshold | int | `3` |                                                                                                                                                                                                 |
+| livenessProbe.httpGet.path | string | `"/"` |                                                                                                                                                                                                 |
+| livenessProbe.httpGet.port | string | `"http"` |                                                                                                                                                                                                 |
+| livenessProbe.periodSeconds | int | `10` |                                                                                                                                                                                                 |
+| livenessProbe.timeoutSeconds | int | `5` |                                                                                                                                                                                                 |
+| monitoring | object | `{"enabled":false,"interval":"30s","kubectl":{"pullPolicy":"IfNotPresent","registry":"","repository":"alpine/kubectl","tag":"1.35.3"},"labels":{},"namespace":"","paperlessExporter":{"affinity":{},"collectors":[],"enabled":true,"existingSecret":"","image":{"pullPolicy":"IfNotPresent","registry":"","repository":"hansmi/prometheus-paperless-exporter","tag":"v0.0.9"},"nodeSelector":{},"port":8081,"resources":{},"secretKey":"api-token","tolerations":[]},"path":"/metrics","scrapeTimeout":"10s","type":"ServiceMonitor","valkeyExporter":{"affinity":{},"enabled":true,"image":{"pullPolicy":"IfNotPresent","registry":"","repository":"oliver006/redis_exporter","tag":"v1.80.1"},"nodeSelector":{},"port":9121,"resources":{},"tolerations":[]}}` | Monitoring configuration                                                                                                                                                                        |
+| monitoring.kubectl | object | `{"pullPolicy":"IfNotPresent","registry":"","repository":"alpine/kubectl","tag":"1.35.3"}` | kubectl image for init containers and jobs                                                                                                                                                      |
+| monitoring.kubectl.registry | string | `""` | Registry (falls back to global.imageRegistry, then to docker.io)                                                                                                                                |
+| monitoring.kubectl.tag | string | `"1.35.3"` | Tag (empty = auto-detect from cluster version)                                                                                                                                                  |
+| monitoring.paperlessExporter | object | `{"affinity":{},"collectors":[],"enabled":true,"existingSecret":"","image":{"pullPolicy":"IfNotPresent","registry":"","repository":"hansmi/prometheus-paperless-exporter","tag":"v0.0.9"},"nodeSelector":{},"port":8081,"resources":{},"secretKey":"api-token","tolerations":[]}` | Paperless exporter (prometheus-paperless-exporter) Exports metrics from Paperless-ngx via REST API Token is automatically created via post-install Job (creates "monitoring" user)              |
+| monitoring.paperlessExporter.collectors | list | `[]` | Collectors to enable (empty = all). Options: tag, correspondent, document_type, storage_path, task, log, group, user, document, status, statistics, remote_version                              |
+| monitoring.paperlessExporter.existingSecret | string | `""` | Existing secret with API token (if set, disables auto-creation)                                                                                                                                 |
+| monitoring.paperlessExporter.image.registry | string | `""` | Registry (falls back to global.imageRegistry, then to ghcr.io)                                                                                                                                  |
+| monitoring.paperlessExporter.secretKey | string | `"api-token"` | Key in the secret containing the API token                                                                                                                                                      |
+| monitoring.type | string | `"ServiceMonitor"` | Type of service monitor: ServiceMonitor (Prometheus) or VMServiceScrape (VictoriaMetrics)                                                                                                       |
+| monitoring.valkeyExporter | object | `{"affinity":{},"enabled":true,"image":{"pullPolicy":"IfNotPresent","registry":"","repository":"oliver006/redis_exporter","tag":"v1.80.1"},"nodeSelector":{},"port":9121,"resources":{},"tolerations":[]}` | Valkey/Redis exporter Exports Redis-compatible metrics from Valkey                                                                                                                              |
+| monitoring.valkeyExporter.image.registry | string | `""` | Registry (falls back to global.imageRegistry, then to docker.io)                                                                                                                                |
+| nameOverride | string | `""` |                                                                                                                                                                                                 |
+| nodeSelector | object | `{}` |                                                                                                                                                                                                 |
+| paperlessAi.addProcessedTag | bool | `true` |                                                                                                                                                                                                 |
+| paperlessAi.affinity | object | `{}` |                                                                                                                                                                                                 |
+| paperlessAi.custom.apiKey | string | `""` |                                                                                                                                                                                                 |
+| paperlessAi.custom.existingSecret | string | `""` |                                                                                                                                                                                                 |
+| paperlessAi.custom.model | string | `""` |                                                                                                                                                                                                 |
+| paperlessAi.custom.secretKey | string | `"api-key"` |                                                                                                                                                                                                 |
+| paperlessAi.custom.url | string | `""` |                                                                                                                                                                                                 |
+| paperlessAi.enabled | bool | `false` |                                                                                                                                                                                                 |
+| paperlessAi.image.pullPolicy | string | `"IfNotPresent"` |                                                                                                                                                                                                 |
+| paperlessAi.image.registry | string | `""` | Registry (falls back to global.imageRegistry)                                                                                                                                                   |
+| paperlessAi.image.repository | string | `"clusterzx/paperless-ai"` |                                                                                                                                                                                                 |
+| paperlessAi.image.tag | string | `"3.0.9"` |                                                                                                                                                                                                 |
+| paperlessAi.ingress.annotations | object | `{}` |                                                                                                                                                                                                 |
+| paperlessAi.ingress.enabled | bool | `false` |                                                                                                                                                                                                 |
+| paperlessAi.ingress.host | string | `"paperless-ai.local"` |                                                                                                                                                                                                 |
+| paperlessAi.ingress.ingressClassName | string | `""` |                                                                                                                                                                                                 |
+| paperlessAi.ingress.tls | list | `[]` |                                                                                                                                                                                                 |
+| paperlessAi.nodeSelector | object | `{}` |                                                                                                                                                                                                 |
+| paperlessAi.ollama.model | string | `"llama3.2"` |                                                                                                                                                                                                 |
+| paperlessAi.ollama.url | string | `"http://ollama:11434"` |                                                                                                                                                                                                 |
+| paperlessAi.openai.apiKey | string | `""` |                                                                                                                                                                                                 |
+| paperlessAi.openai.existingSecret | string | `""` |                                                                                                                                                                                                 |
+| paperlessAi.openai.model | string | `"gpt-4o-mini"` |                                                                                                                                                                                                 |
+| paperlessAi.openai.secretKey | string | `"api-key"` |                                                                                                                                                                                                 |
+| paperlessAi.paperless.apiToken | string | `""` | API token (if not using existingSecret or useSharedToken)                                                                                                                                       |
+| paperlessAi.paperless.existingSecret | string | `""` | Existing secret with API token (overrides useSharedToken)                                                                                                                                       |
+| paperlessAi.paperless.secretKey | string | `"api-token"` |                                                                                                                                                                                                 |
+| paperlessAi.paperless.useSharedToken | bool | `true` | Use shared API token from monitoring (created automatically)                                                                                                                                    |
+| paperlessAi.persistence.enabled | bool | `true` |                                                                                                                                                                                                 |
+| paperlessAi.persistence.existingClaim | string | `""` |                                                                                                                                                                                                 |
+| paperlessAi.persistence.size | string | `"1Gi"` |                                                                                                                                                                                                 |
+| paperlessAi.persistence.storageClass | string | `""` |                                                                                                                                                                                                 |
+| paperlessAi.processExistingDocuments | bool | `false` |                                                                                                                                                                                                 |
+| paperlessAi.processedTagName | string | `"ai-processed"` |                                                                                                                                                                                                 |
+| paperlessAi.provider | string | `"openai"` |                                                                                                                                                                                                 |
+| paperlessAi.resources | object | `{}` |                                                                                                                                                                                                 |
+| paperlessAi.scanInterval | string | `"*/30 * * * *"` |                                                                                                                                                                                                 |
+| paperlessAi.strategy | object | `{}` | Strategy (falls back to global.strategy)                                                                                                                                                        |
+| paperlessAi.tolerations | list | `[]` |                                                                                                                                                                                                 |
+| persistence | object | `{"accessModes":["ReadWriteOnce"],"annotations":{},"enabled":true,"existingClaim":"","size":"20Gi","storageClass":""}` | Persistence configuration (single PVC with subPaths)                                                                                                                                            |
+| podAnnotations | object | `{}` |                                                                                                                                                                                                 |
+| podLabels | object | `{}` |                                                                                                                                                                                                 |
+| podSecurityContext.fsGroup | int | `1000` |                                                                                                                                                                                                 |
+| podSecurityContext.fsGroupChangePolicy | string | `"OnRootMismatch"` |                                                                                                                                                                                                 |
+| postgresql | object | `{"auth":{"database":"","existingSecret":"","password":"","secretKeys":{"adminPasswordKey":"postgres-password"},"username":""},"customUser":{"database":"paperless","existingSecret":"","name":"paperless","password":"","secretKeys":{"database":"CUSTOM_DB","name":"CUSTOM_USER","password":"CUSTOM_PASSWORD"}},"enabled":false,"fullnameOverride":"","image":{"tag":"16"},"metrics":{"enabled":false,"serviceMonitor":{"enabled":false}},"persistence":{"enabled":true,"size":"10Gi","storageClass":""},"replicaCount":1}` | Optional bundled PostgreSQL dependency. Disabled by default so existing users can keep using an external PostgreSQL instance.                                                                   |
+| postgresql.auth.database | string | `""` | Default database for the superuser. Empty defaults to the superuser name:                                                                                                                       |
+| postgresql.auth.existingSecret | string | `""` | Existing secret containing the superuser password. When set, the dependency does not create its own admin credentials secret:                                                                   |
+| postgresql.auth.password | string | `""` | PostgreSQL superuser password. Auto-generated by the dependency when empty. Can be set from CI with --set postgresql.auth.password=... :                                                        |
+| postgresql.auth.secretKeys.adminPasswordKey | string | `"postgres-password"` | Key in auth.existingSecret containing the superuser password:                                                                                                                                   |
+| postgresql.auth.username | string | `""` | PostgreSQL superuser name. Empty means the upstream postgres image uses its default postgres user:                                                                                              |
 | postgresql.customUser | object | `{"database":"paperless","existingSecret":"","name":"paperless","password":"","secretKeys":{"database":"CUSTOM_DB","name":"CUSTOM_USER","password":"CUSTOM_PASSWORD"}}` | Optional non-superuser account for Paperless. When enabled, the dependency creates a separate <fullname>-custom-user-credentials Secret containing CUSTOM_USER, CUSTOM_DB, and CUSTOM_PASSWORD: |
-| postgresql.customUser.existingSecret | string | `""` | Existing secret for the custom Paperless database user. When set, the dependency does not generate the custom-user credentials secret: |
-| postgresql.customUser.password | string | `""` | set postgresql.customUser.password=... |
-| postgresql.customUser.secretKeys.database | string | `"CUSTOM_DB"` | Key containing the custom PostgreSQL database name: |
-| postgresql.customUser.secretKeys.name | string | `"CUSTOM_USER"` | Key containing the custom PostgreSQL user name: |
-| postgresql.customUser.secretKeys.password | string | `"CUSTOM_PASSWORD"` | Key containing the custom PostgreSQL user password: |
-| postgresql.fullnameOverride | string | `""` | Override the PostgreSQL release fullname. Leave empty to use the dependency chart's default fullname. If enabled by this chart, this is useful for producing a predictable service name: |
-| postgresql.replicaCount | int | `1` | Number of PostgreSQL pods. The CloudPirates chart defaults to 1 and plain PostgreSQL does not provide multi-master replication by default: |
-| readinessProbe.failureThreshold | int | `3` |  |
-| readinessProbe.httpGet.path | string | `"/"` |  |
-| readinessProbe.httpGet.port | string | `"http"` |  |
-| readinessProbe.periodSeconds | int | `10` |  |
-| readinessProbe.timeoutSeconds | int | `5` |  |
-| resources | object | `{}` |  |
-| route | object | `{"annotations":{},"enabled":false,"hostnames":["paperless.local"],"labels":{},"parentRefs":[{"name":"gateway","namespace":"gateway-system"}]}` | Gateway API HTTPRoute |
-| securityContext | object | `{}` |  |
-| service.annotations | object | `{}` |  |
-| service.port | int | `8000` |  |
-| service.type | string | `"ClusterIP"` |  |
-| serviceAccount.annotations | object | `{}` |  |
-| serviceAccount.automount | bool | `true` |  |
-| serviceAccount.create | bool | `true` |  |
-| serviceAccount.name | string | `""` |  |
-| startupProbe.failureThreshold | int | `30` |  |
-| startupProbe.httpGet.path | string | `"/"` |  |
-| startupProbe.httpGet.port | string | `"http"` |  |
-| startupProbe.initialDelaySeconds | int | `10` |  |
-| startupProbe.periodSeconds | int | `10` |  |
-| startupProbe.timeoutSeconds | int | `5` |  |
-| strategy | object | `{}` | Deployment strategy (falls back to global.strategy) |
-| tika | object | `{"affinity":{},"enabled":false,"image":{"pullPolicy":"IfNotPresent","registry":"","repository":"apache/tika","tag":"3.2.3.0"},"nodeSelector":{},"port":9998,"resources":{},"strategy":{},"tolerations":[]}` | Tika server for advanced document parsing |
-| tika.image.registry | string | `""` | Registry (falls back to global.imageRegistry) |
-| tika.strategy | object | `{}` | Strategy (falls back to global.strategy) |
-| tolerations | list | `[]` |  |
-| valkey | object | `{}` |  |
-| volumeMounts | list | `[]` |  |
-| volumes | list | `[]` |  |
+| postgresql.customUser.existingSecret | string | `""` | Existing secret for the custom Paperless database user. When set, the dependency does not generate the custom-user credentials secret:                                                          |
+| postgresql.customUser.password | string | `""` | set postgresql.customUser.password=...                                                                                                                                                          |
+| postgresql.customUser.secretKeys.database | string | `"CUSTOM_DB"` | Key containing the custom PostgreSQL database name:                                                                                                                                             |
+| postgresql.customUser.secretKeys.name | string | `"CUSTOM_USER"` | Key containing the custom PostgreSQL user name:                                                                                                                                                 |
+| postgresql.customUser.secretKeys.password | string | `"CUSTOM_PASSWORD"` | Key containing the custom PostgreSQL user password:                                                                                                                                             |
+| postgresql.fullnameOverride | string | `""` | Override the PostgreSQL release fullname. Leave empty to use the dependency chart's default fullname. If enabled by this chart, this is useful for producing a predictable service name:        |
+| postgresql.replicaCount | int | `1` | Number of PostgreSQL pods. Defaults to 1 in which case PostgreSQL does not provide multi-master replication:                                                                                    |
+| readinessProbe.failureThreshold | int | `3` |                                                                                                                                                                                                 |
+| readinessProbe.httpGet.path | string | `"/"` |                                                                                                                                                                                                 |
+| readinessProbe.httpGet.port | string | `"http"` |                                                                                                                                                                                                 |
+| readinessProbe.periodSeconds | int | `10` |                                                                                                                                                                                                 |
+| readinessProbe.timeoutSeconds | int | `5` |                                                                                                                                                                                                 |
+| resources | object | `{}` |                                                                                                                                                                                                 |
+| route | object | `{"annotations":{},"enabled":false,"hostnames":["paperless.local"],"labels":{},"parentRefs":[{"name":"gateway","namespace":"gateway-system"}]}` | Gateway API HTTPRoute                                                                                                                                                                           |
+| securityContext | object | `{}` |                                                                                                                                                                                                 |
+| service.annotations | object | `{}` |                                                                                                                                                                                                 |
+| service.port | int | `8000` |                                                                                                                                                                                                 |
+| service.type | string | `"ClusterIP"` |                                                                                                                                                                                                 |
+| serviceAccount.annotations | object | `{}` |                                                                                                                                                                                                 |
+| serviceAccount.automount | bool | `true` |                                                                                                                                                                                                 |
+| serviceAccount.create | bool | `true` |                                                                                                                                                                                                 |
+| serviceAccount.name | string | `""` |                                                                                                                                                                                                 |
+| startupProbe.failureThreshold | int | `30` |                                                                                                                                                                                                 |
+| startupProbe.httpGet.path | string | `"/"` |                                                                                                                                                                                                 |
+| startupProbe.httpGet.port | string | `"http"` |                                                                                                                                                                                                 |
+| startupProbe.initialDelaySeconds | int | `10` |                                                                                                                                                                                                 |
+| startupProbe.periodSeconds | int | `10` |                                                                                                                                                                                                 |
+| startupProbe.timeoutSeconds | int | `5` |                                                                                                                                                                                                 |
+| strategy | object | `{}` | Deployment strategy (falls back to global.strategy)                                                                                                                                             |
+| tika | object | `{"affinity":{},"enabled":false,"image":{"pullPolicy":"IfNotPresent","registry":"","repository":"apache/tika","tag":"3.2.3.0"},"nodeSelector":{},"port":9998,"resources":{},"strategy":{},"tolerations":[]}` | Tika server for advanced document parsing                                                                                                                                                       |
+| tika.image.registry | string | `""` | Registry (falls back to global.imageRegistry)                                                                                                                                                   |
+| tika.strategy | object | `{}` | Strategy (falls back to global.strategy)                                                                                                                                                        |
+| tolerations | list | `[]` |                                                                                                                                                                                                 |
+| valkey | object | `{}` |                                                                                                                                                                                                 |
+| volumeMounts | list | `[]` |                                                                                                                                                                                                 |
+| volumes | list | `[]` |                                                                                                                                                                                                 |
