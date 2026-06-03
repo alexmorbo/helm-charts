@@ -69,29 +69,53 @@ spec:
               value: {{ .Values.app.csrfTrustedOrigins | default $appUrl | quote }}
             {{- end }}
             # Database configuration
-            {{- if .Values.app.database.host }}
+            {{- $postgresqlEnabled := .Values.postgresql.enabled }}
+            {{- $postgresqlFullname := default (printf "%s-postgresql" .Release.Name) .Values.postgresql.fullnameOverride }}
+            {{- $postgresqlSecretName := default (printf "%s-custom-user-credentials" $postgresqlFullname) .Values.postgresql.customUser.existingSecret }}
+            {{- $postgresqlSecretKey := default "CUSTOM_PASSWORD" .Values.postgresql.customUser.secretKeys.password }}
+            {{- $postgresqlService := default dict .Values.postgresql.service }}
+            {{- $postgresqlPort := default 5432 (index $postgresqlService "port") }}
+            {{- $dbHost := .Values.app.database.host }}
+            {{- $dbPort := .Values.app.database.port }}
+            {{- $dbName := .Values.app.database.name }}
+            {{- $dbUser := .Values.app.database.user }}
+            {{- $dbSecretName := .Values.app.database.existingSecret }}
+            {{- $dbSecretKey := .Values.app.database.existingSecretKey }}
+            {{- if and $postgresqlEnabled (not .Values.app.database.host) }}
+            {{- $dbHost = $postgresqlFullname }}
+            {{- $dbPort = $postgresqlPort }}
+            {{- $dbName = .Values.postgresql.customUser.database }}
+            {{- $dbUser = .Values.postgresql.customUser.name }}
+            {{- end }}
+            {{- if not $dbSecretName }}
+            {{- if $postgresqlEnabled }}
+            {{- $dbSecretName = $postgresqlSecretName }}
+            {{- $dbSecretKey = $postgresqlSecretKey }}
+            {{- else if .Values.app.database.password }}
+            {{- $dbSecretName = include "paperless-ngx.fullname" . }}
+            {{- $dbSecretKey = "db-password" }}
+            {{- end }}
+            {{- end }}
+            {{- if $dbHost }}
             - name: PAPERLESS_DBENGINE
               value: "postgresql"
             - name: PAPERLESS_DBHOST
-              value: {{ .Values.app.database.host | quote }}
+              value: {{ $dbHost | quote }}
             - name: PAPERLESS_DBPORT
-              value: {{ .Values.app.database.port | quote }}
+              value: {{ $dbPort | quote }}
             - name: PAPERLESS_DBNAME
-              value: {{ .Values.app.database.name | quote }}
+              value: {{ $dbName | quote }}
             - name: PAPERLESS_DBUSER
-              value: {{ .Values.app.database.user | quote }}
+              value: {{ $dbUser | quote }}
             - name: PAPERLESS_DBSSLMODE
               value: {{ .Values.app.database.sslmode | quote }}
+            {{- if $dbSecretName }}
             - name: PAPERLESS_DBPASS
               valueFrom:
                 secretKeyRef:
-                  {{- if .Values.app.database.existingSecret }}
-                  name: {{ .Values.app.database.existingSecret }}
-                  key: {{ .Values.app.database.existingSecretKey }}
-                  {{- else }}
-                  name: {{ include "paperless-ngx.fullname" . }}
-                  key: db-password
-                  {{- end }}
+                  name: {{ $dbSecretName }}
+                  key: {{ $dbSecretKey }}
+            {{- end }}
             {{- end }}
             # Redis configuration
             {{- if .Values.app.valkey.enabled }}
