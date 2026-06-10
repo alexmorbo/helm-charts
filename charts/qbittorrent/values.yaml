@@ -278,7 +278,7 @@ manage:
     registry: ghcr.io
     repository: stuffanthings/qbit_manage
     pullPolicy: IfNotPresent
-    tag: "v4.7.0"
+    tag: "v4.8.1"
     sha: ""
 
   imagePullSecrets: [ ]
