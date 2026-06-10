@@ -138,6 +138,13 @@ qbittorrent:
   #   mountPath: "/etc/foo"
   #   readOnly: true
 
+  # -- Static /etc/hosts entries for the qbittorrent pod. Used to redirect flaky
+  # tracker announce hostnames to an in-cluster retrying proxy.
+  hostAliases: []
+  # - ip: "10.208.255.53"
+  #   hostnames:
+  #     - bt.t-ru.org
+
   nodeSelector: {}
 
   tolerations: []

@@ -1,7 +1,7 @@
 
 # qbittorrent
 
-![Version: 1.1.1](https://img.shields.io/badge/Version-1.1.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 5.1.4](https://img.shields.io/badge/AppVersion-5.1.4-informational?style=flat-square)
+![Version: 1.2.0](https://img.shields.io/badge/Version-1.2.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 5.2.1](https://img.shields.io/badge/AppVersion-5.2.1-informational?style=flat-square)
 
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/qbittorrent)](https://artifacthub.io/packages/search?repo=qbittorrent)
 
@@ -92,6 +92,7 @@ helm install qbittorrent oci://ghcr.io/alexmorbo/helm-charts/qbittorrent
 | qbittorrent.extraInitContainers | list | `[]` |  |
 | qbittorrent.fullnameOverride | string | `""` |  |
 | qbittorrent.gluetun | object | `{"enabled":true,"extraEnv":[],"extraEnvFrom":[],"image":{"pullPolicy":"IfNotPresent","registry":"docker.io","repository":"qmcgaw/gluetun","sha":"","tag":"v3.40.0"},"resources":{"limits":{"squat.ai/tun":1}},"securityContext":{"capabilities":{"add":["NET_ADMIN"]}},"volumeMounts":[]}` | Gluetun sidecar |
+| qbittorrent.hostAliases | list | `[]` | Static /etc/hosts entries for the qbittorrent pod. Used to redirect flaky tracker announce hostnames to an in-cluster retrying proxy. |
 | qbittorrent.image.pullPolicy | string | `"IfNotPresent"` |  |
 | qbittorrent.image.registry | string | `"ghcr.io"` |  |
 | qbittorrent.image.repository | string | `"home-operations/qbittorrent"` |  |
