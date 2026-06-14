@@ -173,6 +173,10 @@ gotenberg:
   port: 3000
   # -- Strategy (falls back to global.strategy)
   strategy: {}
+  # -- Suppress Gotenberg access logs from Kubernetes health probes and Prometheus metrics scrapes
+  suppressProbeMetricLogs: true
+  # -- Additional environment variables to add to the Gotenberg pod
+  extraEnv: []
   resources: {}
   nodeSelector: {}
   tolerations: []
