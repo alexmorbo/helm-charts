@@ -3,8 +3,8 @@ kubeVersion: ">=1.23.0-0"
 name: flaresolverr
 description: FlareSolverr is a proxy server to bypass Cloudflare and DDoS-GUARD protection
 type: application
-version: 0.1.0
-appVersion: "3.4.6"
+version: 0.2.0
+appVersion: "3.5.0"
 maintainers:
   - name: AlexMorbo
     email: alex@morbo.ru
@@ -27,4 +27,4 @@ annotations:
       url: https://github.com/alexmorbo/helm-charts/tree/master/charts/flaresolverr
   artifacthub.io/images: |
     - name: flaresolverr
-      image: ghcr.io/flaresolverr/flaresolverr:v3.3.21
+      image: ghcr.io/flaresolverr/flaresolverr:v3.5.0
