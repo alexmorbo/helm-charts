@@ -3,7 +3,7 @@ kubeVersion: ">=1.23.0-0"
 name: immich
 description: Immich helm chart for Kubernetes - self-hosted photo and video backup solution
 type: application
-version: 0.1.0
+version: 0.1.1
 appVersion: "v3.1.0"
 maintainers:
   - name: AlexMorbo

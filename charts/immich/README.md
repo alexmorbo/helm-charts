@@ -1,7 +1,7 @@
 
 # immich
 
-![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v3.1.0](https://img.shields.io/badge/AppVersion-v3.1.0-informational?style=flat-square)
+![Version: 0.1.1](https://img.shields.io/badge/Version-0.1.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v3.1.0](https://img.shields.io/badge/AppVersion-v3.1.0-informational?style=flat-square)
 
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/immich)](https://artifacthub.io/packages/search?repo=immich)
 
@@ -45,6 +45,7 @@ helm install immich oci://ghcr.io/alexmorbo/helm-charts/immich
 | app.redis.dbIndex | string | `""` | Redis database index |
 | app.redis.password | string | `""` | Password, used only when existingSecret is empty |
 | app.timeZone | string | `""` | Timezone (e.g., Europe/Moscow, UTC) |
+| enableServiceLinks | bool | `false` | Inject the legacy docker-link environment variables of every Service in the namespace into the server pod. MUST stay false: the server Service is named after the release, so Kubernetes injects IMMICH_PORT=tcp://<clusterIP>:2283 - and immich reads IMMICH_PORT as its own listen port, which makes the container crash on startup with "[IMMICH_PORT] Invalid input: expected number, received NaN". The chart also sets IMMICH_PORT explicitly, which shadows the injected value, but there is no reason to turn this on. |
 | extraEnv | list | `[]` | Environment variables to add to the pods |
 | extraEnvFrom | list | `[]` | Environment variables from secrets or configmaps to add to the pods |
 | extraInitContainers | list | `[]` | Additional init containers |
@@ -73,6 +74,7 @@ helm install immich oci://ghcr.io/alexmorbo/helm-charts/immich
 | livenessProbe.periodSeconds | int | `10` |  |
 | livenessProbe.timeoutSeconds | int | `5` |  |
 | machineLearning.affinity | object | `{}` |  |
+| machineLearning.enableServiceLinks | bool | `false` | Same as the top level enableServiceLinks, for the machine learning pod. MUST stay false: the injected IMMICH_PORT=tcp://<clusterIP>:2283 of the server Service is read by immich_ml as its own listen port and crashes the container with a pydantic int_parsing ValidationError. |
 | machineLearning.enabled | bool | `true` |  |
 | machineLearning.extraEnv | list | `[]` | Environment variables to add to the machine learning pod |
 | machineLearning.extraEnvFrom | list | `[]` | Environment variables from secrets or configmaps |

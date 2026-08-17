@@ -1,4 +1,5 @@
 {{- if .Values.machineLearning.enabled }}
+{{- $containerPort := 3003 }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -29,6 +30,11 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
+      # Legacy docker-link variables are injected for every Service in the
+      # namespace. The server Service is named after the release, so they land
+      # in the pod as IMMICH_PORT=tcp://<clusterIP>:<port> and the ML service
+      # parses that as its own listen port. Keep this false.
+      enableServiceLinks: {{ .Values.machineLearning.enableServiceLinks | default false }}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
@@ -53,9 +59,14 @@ spec:
           imagePullPolicy: {{ .Values.machineLearning.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: 3003
+              containerPort: {{ $containerPort }}
               protocol: TCP
           env:
+            # Listen port (immich_ml NonPrefixedSettings). Set explicitly so it
+            # wins over the legacy docker-link IMMICH_PORT injected when
+            # enableServiceLinks is on.
+            - name: IMMICH_PORT
+              value: {{ $containerPort | quote }}
             {{- if .Values.persistence.cache.enabled }}
             - name: MACHINE_LEARNING_CACHE_FOLDER
               value: {{ .Values.persistence.cache.mountPath | quote }}

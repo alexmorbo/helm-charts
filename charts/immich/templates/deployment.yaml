@@ -1,3 +1,4 @@
+{{- $containerPort := 2283 -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -24,6 +25,11 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
+      # Legacy docker-link variables are injected for every Service in the
+      # namespace. The server Service is named after the release, so they land
+      # in the pod as IMMICH_PORT=tcp://<clusterIP>:<port> and immich parses that
+      # as its own listen port. Keep this false.
+      enableServiceLinks: {{ .Values.enableServiceLinks | default false }}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
@@ -52,7 +58,7 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: 2283
+              containerPort: {{ $containerPort }}
               protocol: TCP
             {{- if .Values.monitoring.enabled }}
             - name: metrics
@@ -60,6 +66,10 @@ spec:
               protocol: TCP
             {{- end }}
           env:
+            # Listen port. Set explicitly so it wins over the legacy
+            # docker-link IMMICH_PORT injected when enableServiceLinks is on.
+            - name: IMMICH_PORT
+              value: {{ $containerPort | quote }}
             # Database configuration
             {{- if not (or .Values.app.database.existingSecret .Values.app.database.host) }}
             {{- required "immich: either app.database.existingSecret or app.database.host must be set - immich requires a PostgreSQL database" "" }}

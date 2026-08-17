@@ -25,6 +25,16 @@ imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
+# -- Inject the legacy docker-link environment variables of every Service in
+# the namespace into the server pod. MUST stay false: the server Service is
+# named after the release, so Kubernetes injects
+# IMMICH_PORT=tcp://<clusterIP>:2283 - and immich reads IMMICH_PORT as its own
+# listen port, which makes the container crash on startup with
+# "[IMMICH_PORT] Invalid input: expected number, received NaN".
+# The chart also sets IMMICH_PORT explicitly, which shadows the injected value,
+# but there is no reason to turn this on.
+enableServiceLinks: false
+
 # -- Deployment strategy (falls back to global.strategy)
 strategy: {}
 
@@ -126,6 +136,12 @@ machineLearning:
     # Use a hardware flavour suffix to switch backends, e.g. "v3.1.0-openvino".
     tag: ""
     pullPolicy: IfNotPresent
+
+  # -- Same as the top level enableServiceLinks, for the machine learning pod.
+  # MUST stay false: the injected IMMICH_PORT=tcp://<clusterIP>:2283 of the
+  # server Service is read by immich_ml as its own listen port and crashes the
+  # container with a pydantic int_parsing ValidationError.
+  enableServiceLinks: false
 
   # -- Strategy (falls back to global.strategy)
   strategy: {}
