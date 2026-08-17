@@ -1,0 +1,39 @@
+apiVersion: v2
+kubeVersion: ">=1.23.0-0"
+name: immich
+description: Immich helm chart for Kubernetes - self-hosted photo and video backup solution
+type: application
+version: 0.1.0
+appVersion: "v3.1.0"
+maintainers:
+  - name: AlexMorbo
+    email: alex@morbo.ru
+sources:
+  - https://github.com/alexmorbo/helm-charts/tree/master/charts/immich
+icon: https://raw.githubusercontent.com/alexmorbo/helm-charts/refs/heads/master/docs/assets/logo.svg
+home: https://github.com/alexmorbo/helm-charts
+keywords:
+  - immich
+  - photos
+  - videos
+  - backup
+  - gallery
+  - self-hosted
+annotations:
+  artifacthub.io/license: MIT
+  artifacthub.io/links: |-
+    - name: App Source
+      url: https://github.com/immich-app/immich
+    - name: Chart Source
+      url: https://github.com/alexmorbo/helm-charts/tree/master/charts/immich
+  artifacthub.io/images: |
+    - name: immich-server
+      image: ghcr.io/immich-app/immich-server:v3.1.0
+    - name: immich-machine-learning
+      image: ghcr.io/immich-app/immich-machine-learning:v3.1.0
+
+dependencies:
+  - name: valkey
+    version: "0.x.x"
+    repository: https://valkey.io/valkey-helm/
+    condition: valkey.enabled

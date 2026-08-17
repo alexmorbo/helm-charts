@@ -1,0 +1,6 @@
+dependencies:
+- name: valkey
+  repository: https://valkey.io/valkey-helm/
+  version: 0.11.0
+digest: sha256:b533facbe80e2884a602ce69949ba942b137c93811e5775d7af730efcbe9eab3
+generated: "2026-08-17T12:49:52.365107+03:00"

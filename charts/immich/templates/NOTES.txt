@@ -1,0 +1,23 @@
+Immich has been deployed.
+
+Release: {{ .Release.Name }}
+Namespace: {{ .Release.Namespace }}
+
+{{- if .Values.ingress.enabled }}
+Access Immich at:
+{{- range $host := .Values.ingress.hosts }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}
+{{- end }}
+{{- else }}
+To access Immich, run:
+  kubectl port-forward svc/{{ include "immich.fullname" . }} 2283:{{ .Values.service.port }} -n {{ .Release.Namespace }}
+Then open http://localhost:2283
+{{- end }}
+
+The library PVC "{{ .Values.persistence.library.existingClaim }}" is mounted at {{ .Values.persistence.library.mountPath }} and is NOT
+managed by this chart - it is never created, resized or deleted by helm.
+{{- if .Values.machineLearning.enabled }}
+
+Machine learning runs as a separate deployment:
+  image: {{ include "immich.machineLearningImage" . }}
+{{- end }}

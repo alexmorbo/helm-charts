@@ -1,0 +1,216 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "immich.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "immich.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  strategy:
+    {{- include "immich.strategy" (dict "local" .Values.strategy "global" .Values.global.strategy) | nindent 4 }}
+  selector:
+    matchLabels:
+      {{- include "immich.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "immich.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "immich.serviceAccountName" . }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.extraInitContainers }}
+      initContainers:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          {{- if or .Values.securityContext .Values.hwaccel.enabled }}
+          securityContext:
+            {{- with .Values.securityContext }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- if and .Values.hwaccel.enabled .Values.hwaccel.privileged }}
+            privileged: true
+            {{- end }}
+          {{- end }}
+          image: {{ include "immich.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 2283
+              protocol: TCP
+            {{- if .Values.monitoring.enabled }}
+            - name: metrics
+              containerPort: {{ .Values.monitoring.port }}
+              protocol: TCP
+            {{- end }}
+          env:
+            # Database configuration
+            {{- if not (or .Values.app.database.existingSecret .Values.app.database.host) }}
+            {{- required "immich: either app.database.existingSecret or app.database.host must be set - immich requires a PostgreSQL database" "" }}
+            {{- end }}
+            {{- $dbSecret := include "immich.databaseSecretName" . }}
+            {{- $dbKeys := .Values.app.database.secretKeys }}
+            - name: DB_HOSTNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $dbSecret }}
+                  key: {{ $dbKeys.host }}
+            - name: DB_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $dbSecret }}
+                  key: {{ $dbKeys.port }}
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $dbSecret }}
+                  key: {{ $dbKeys.username }}
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $dbSecret }}
+                  key: {{ $dbKeys.password }}
+            - name: DB_DATABASE_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $dbSecret }}
+                  key: {{ $dbKeys.database }}
+            {{- with .Values.app.database.vectorExtension }}
+            - name: DB_VECTOR_EXTENSION
+              value: {{ . | quote }}
+            {{- end }}
+            # Redis configuration
+            {{- $valkey := default dict .Values.valkey }}
+            {{- $redisHost := .Values.app.redis.host }}
+            {{- if and (not $redisHost) $valkey.enabled }}
+            {{- $redisHost = include "immich.valkeyFullname" . }}
+            {{- end }}
+            {{- if not $redisHost }}
+            {{- required "immich: either valkey.enabled or app.redis.host must be set - immich requires a Redis compatible cache" "" }}
+            {{- end }}
+            - name: REDIS_HOSTNAME
+              value: {{ $redisHost | quote }}
+            - name: REDIS_PORT
+              value: {{ .Values.app.redis.port | quote }}
+            {{- if .Values.app.redis.dbIndex }}
+            - name: REDIS_DBINDEX
+              value: {{ .Values.app.redis.dbIndex | quote }}
+            {{- end }}
+            {{- if or .Values.app.redis.existingSecret .Values.app.redis.password }}
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.app.redis.existingSecret }}
+                  name: {{ .Values.app.redis.existingSecret }}
+                  key: {{ .Values.app.redis.existingSecretKey }}
+                  {{- else }}
+                  name: {{ include "immich.fullname" . }}
+                  key: redis-password
+                  {{- end }}
+            {{- end }}
+            # Machine learning
+            {{- if .Values.machineLearning.enabled }}
+            - name: IMMICH_MACHINE_LEARNING_URL
+              value: "http://{{ include "immich.machineLearningFullname" . }}:{{ .Values.machineLearning.service.port }}"
+            {{- else }}
+            - name: IMMICH_MACHINE_LEARNING_ENABLED
+              value: "false"
+            {{- end }}
+            # App configuration
+            {{- if .Values.persistence.library.enabled }}
+            - name: IMMICH_MEDIA_LOCATION
+              value: {{ .Values.persistence.library.mountPath | quote }}
+            {{- end }}
+            {{- if .Values.app.timeZone }}
+            - name: TZ
+              value: {{ .Values.app.timeZone | quote }}
+            {{- end }}
+            # Telemetry
+            {{- if .Values.monitoring.enabled }}
+            - name: IMMICH_TELEMETRY_INCLUDE
+              value: {{ .Values.monitoring.telemetryInclude | quote }}
+            - name: IMMICH_API_METRICS_PORT
+              value: {{ .Values.monitoring.port | quote }}
+            {{- end }}
+            # Extra env
+            {{- with .Values.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- with .Values.extraEnvFrom }}
+          envFrom:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            {{- if .Values.persistence.library.enabled }}
+            - name: library
+              mountPath: {{ .Values.persistence.library.mountPath }}
+              {{- with .Values.persistence.library.subPath }}
+              subPath: {{ . }}
+              {{- end }}
+            {{- end }}
+            {{- if .Values.hwaccel.enabled }}
+            - name: dri
+              mountPath: {{ .Values.hwaccel.mountPath }}
+            {{- end }}
+            {{- with .Values.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- with .Values.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        {{- if .Values.persistence.library.enabled }}
+        - name: library
+          persistentVolumeClaim:
+            claimName: {{ include "immich.libraryClaimName" . }}
+        {{- end }}
+        {{- if .Values.hwaccel.enabled }}
+        - name: dri
+          hostPath:
+            path: {{ .Values.hwaccel.hostPath }}
+            type: Directory
+        {{- end }}
+        {{- with .Values.volumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

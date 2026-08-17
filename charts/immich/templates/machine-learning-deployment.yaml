@@ -1,0 +1,129 @@
+{{- if .Values.machineLearning.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "immich.machineLearningFullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "immich.labels" . | nindent 4 }}
+    app.kubernetes.io/component: machine-learning
+spec:
+  replicas: 1
+  strategy:
+    {{- include "immich.strategy" (dict "local" .Values.machineLearning.strategy "global" .Values.global.strategy) | nindent 4 }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "immich.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: machine-learning
+  template:
+    metadata:
+      {{- with .Values.machineLearning.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "immich.labels" . | nindent 8 }}
+        app.kubernetes.io/component: machine-learning
+        {{- with .Values.machineLearning.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "immich.serviceAccountName" . }}
+      {{- with .Values.machineLearning.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: machine-learning
+          {{- if or .Values.machineLearning.securityContext .Values.machineLearning.hwaccel.enabled }}
+          securityContext:
+            {{- with .Values.machineLearning.securityContext }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- if and .Values.machineLearning.hwaccel.enabled .Values.machineLearning.hwaccel.privileged }}
+            privileged: true
+            {{- end }}
+          {{- end }}
+          image: {{ include "immich.machineLearningImage" . }}
+          imagePullPolicy: {{ .Values.machineLearning.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 3003
+              protocol: TCP
+          env:
+            {{- if .Values.persistence.cache.enabled }}
+            - name: MACHINE_LEARNING_CACHE_FOLDER
+              value: {{ .Values.persistence.cache.mountPath | quote }}
+            {{- end }}
+            {{- if .Values.app.timeZone }}
+            - name: TZ
+              value: {{ .Values.app.timeZone | quote }}
+            {{- end }}
+            {{- with .Values.machineLearning.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- with .Values.machineLearning.extraEnvFrom }}
+          envFrom:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            {{- if .Values.persistence.cache.enabled }}
+            - name: cache
+              mountPath: {{ .Values.persistence.cache.mountPath }}
+            {{- end }}
+            {{- if .Values.machineLearning.hwaccel.enabled }}
+            - name: dri
+              mountPath: {{ .Values.machineLearning.hwaccel.mountPath }}
+            {{- end }}
+            {{- with .Values.machineLearning.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- with .Values.machineLearning.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.machineLearning.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.machineLearning.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.machineLearning.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        {{- if .Values.persistence.cache.enabled }}
+        - name: cache
+          persistentVolumeClaim:
+            claimName: {{ include "immich.cacheClaimName" . }}
+        {{- end }}
+        {{- if .Values.machineLearning.hwaccel.enabled }}
+        - name: dri
+          hostPath:
+            path: {{ .Values.machineLearning.hwaccel.hostPath }}
+            type: Directory
+        {{- end }}
+        {{- with .Values.machineLearning.volumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.machineLearning.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.machineLearning.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.machineLearning.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}
