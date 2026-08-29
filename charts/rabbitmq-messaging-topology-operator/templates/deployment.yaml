@@ -58,6 +58,11 @@ spec:
             {{- if .Values.metrics.secure }}
             - --metrics-secure
             - --metrics-cert-path=/tmp/k8s-metrics-server/metrics-certs
+            {{- else }}
+            {{- /* The operator defaults --metrics-secure to true, so plain HTTP
+            has to be asked for explicitly: omitting the flag leaves the
+            endpoint on HTTPS while the scrape goes over HTTP. */}}
+            - --metrics-secure=false
             {{- end }}
             {{- else }}
             - --metrics-bind-address=0
