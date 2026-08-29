@@ -1,0 +1,55 @@
+{{- $needIssuer := and (or (and .Values.webhook.enabled .Values.webhook.certificate.enabled) (and .Values.metrics.enabled .Values.metrics.secure)) (not .Values.webhook.certificate.issuerRef) }}
+{{- if $needIssuer }}
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ include "rabbitmq-messaging-topology-operator.fullname" . }}-selfsigned
+  namespace: {{ .Release.Namespace }}
+  labels: {{- include "rabbitmq-messaging-topology-operator.labels" . | nindent 4 }}
+spec:
+  selfSigned: {}
+{{- end }}
+{{- define "rabbitmq-messaging-topology-operator.issuerRef" -}}
+{{- if .Values.webhook.certificate.issuerRef }}
+{{- toYaml .Values.webhook.certificate.issuerRef }}
+{{- else }}
+kind: Issuer
+name: {{ include "rabbitmq-messaging-topology-operator.fullname" . }}-selfsigned
+{{- end }}
+{{- end }}
+{{- if and .Values.webhook.enabled .Values.webhook.certificate.enabled }}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "rabbitmq-messaging-topology-operator.webhookCertName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels: {{- include "rabbitmq-messaging-topology-operator.labels" . | nindent 4 }}
+spec:
+  secretName: {{ include "rabbitmq-messaging-topology-operator.webhookCertName" . }}
+  dnsNames:
+    - {{ printf "%s.%s.svc" (include "rabbitmq-messaging-topology-operator.webhookServiceName" .) .Release.Namespace }}
+    - {{ printf "%s.%s.svc.cluster.local" (include "rabbitmq-messaging-topology-operator.webhookServiceName" .) .Release.Namespace }}
+  {{- with .Values.webhook.certificate.duration }}
+  duration: {{ . }}
+  {{- end }}
+  {{- with .Values.webhook.certificate.renewBefore }}
+  renewBefore: {{ . }}
+  {{- end }}
+  issuerRef: {{- include "rabbitmq-messaging-topology-operator.issuerRef" . | nindent 4 }}
+{{- end }}
+{{- if and .Values.metrics.enabled .Values.metrics.secure }}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "rabbitmq-messaging-topology-operator.metricsCertName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels: {{- include "rabbitmq-messaging-topology-operator.labels" . | nindent 4 }}
+spec:
+  secretName: {{ include "rabbitmq-messaging-topology-operator.metricsCertName" . }}
+  dnsNames:
+    - {{ printf "%s.%s.svc" (include "rabbitmq-messaging-topology-operator.metricsServiceName" .) .Release.Namespace }}
+    - {{ printf "%s.%s.svc.cluster.local" (include "rabbitmq-messaging-topology-operator.metricsServiceName" .) .Release.Namespace }}
+  issuerRef: {{- include "rabbitmq-messaging-topology-operator.issuerRef" . | nindent 4 }}
+{{- end }}

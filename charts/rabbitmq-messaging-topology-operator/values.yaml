@@ -1,0 +1,123 @@
+# -- Number of operator replicas. The operator elects a leader, so extra
+# replicas only shorten failover; they do not process in parallel.
+replicaCount: 1
+
+image:
+  # -- Image registry. Upstream publishes the same image to quay.io and ghcr.io.
+  registry: quay.io
+  repository: rabbitmqoperator/messaging-topology-operator
+  pullPolicy: IfNotPresent
+  # -- Image tag. Defaults to the chart appVersion.
+  tag: ""
+
+imagePullSecrets: []
+
+nameOverride: ""
+fullnameOverride: ""
+
+crds:
+  # -- Install the thirteen topology CustomResourceDefinitions.
+  # Rendered as regular templates rather than placed in the chart's crds/
+  # directory: Helm installs that directory once and never upgrades it. Kept
+  # on uninstall via helm.sh/resource-policy.
+  install: true
+
+# -- Namespaces the operator watches. Empty watches every namespace.
+watchNamespaces: ""
+
+serviceAccount:
+  # -- Create the operator ServiceAccount.
+  create: true
+  annotations: {}
+  # -- Name to use. Generated from the fullname template when empty.
+  name: ""
+
+rbac:
+  # -- Create ClusterRole, Role and their bindings.
+  create: true
+
+webhook:
+  # -- Admission webhooks for the topology objects. Their rules are scoped to
+  # the rabbitmq.com group, so a stopped operator blocks changes to those
+  # objects only.
+  enabled: true
+  # -- failurePolicy for both webhook configurations.
+  failurePolicy: Fail
+  certificate:
+    # -- Issue the webhook certificate with cert-manager. Required while
+    # webhook.enabled is true.
+    enabled: true
+    # -- Issuer to sign with. Empty creates a self-signed Issuer in the
+    # release namespace, matching upstream.
+    issuerRef: {}
+    duration: ""
+    renewBefore: ""
+
+metrics:
+  # -- Expose operator metrics.
+  enabled: true
+  # -- Serve metrics over HTTPS with client authentication, as upstream does.
+  # The endpoint then requires a bearer token and the scraper has to accept
+  # the certificate; see monitoring.tlsConfig below.
+  # Turning this off serves plain HTTP on the same port and drops the
+  # certificate, which makes scraping trivial at the cost of an open endpoint
+  # inside the cluster.
+  secure: true
+  port: 8443
+
+monitoring:
+  # -- Scrape the operator metrics. Requires metrics.enabled.
+  enabled: false
+  # -- ServiceMonitor for prometheus-operator, VMServiceScrape for the
+  # VictoriaMetrics operator.
+  type: ServiceMonitor
+  path: /metrics
+  interval: 30s
+  scrapeTimeout: 10s
+  labels: {}
+  namespace: ""
+  # -- TLS settings used when metrics.secure is true. The default trusts the
+  # self-signed certificate the operator serves; point ca at the issued secret
+  # instead if you would rather verify it.
+  tlsConfig:
+    insecureSkipVerify: true
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 300m
+    memory: 128Mi
+
+# -- Extra arguments for the operator binary.
+extraArgs: []
+
+# -- Extra environment variables for the operator container.
+extraEnv: []
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+topologySpreadConstraints: []
+priorityClassName: ""
+
+terminationGracePeriodSeconds: 10

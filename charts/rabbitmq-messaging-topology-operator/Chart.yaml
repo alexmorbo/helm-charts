@@ -1,0 +1,92 @@
+apiVersion: v2
+kubeVersion: ">=1.23.0-0"
+name: rabbitmq-messaging-topology-operator
+description: RabbitMQ Messaging Topology Operator helm chart for Kubernetes
+type: application
+version: 1.0.0
+appVersion: "1.20.2"
+maintainers:
+  - name: AlexMorbo
+    email: alex@morbo.ru
+sources:
+  - https://github.com/alexmorbo/helm-charts/tree/master/charts/rabbitmq-messaging-topology-operator
+icon: https://raw.githubusercontent.com/alexmorbo/helm-charts/refs/heads/master/docs/assets/logo.svg
+home: https://github.com/alexmorbo/helm-charts
+keywords:
+  - rabbitmq
+  - operator
+  - messaging
+annotations:
+  artifacthub.io/license: MIT
+  artifacthub.io/operator: "true"
+  artifacthub.io/crds: |-
+    - kind: Binding
+      version: v1beta1
+      name: bindings.rabbitmq.com
+      displayName: Binding
+      description: A binding between a RabbitMQ exchange and a queue
+    - kind: Exchange
+      version: v1beta1
+      name: exchanges.rabbitmq.com
+      displayName: Exchange
+      description: A RabbitMQ exchange
+    - kind: Federation
+      version: v1beta1
+      name: federations.rabbitmq.com
+      displayName: Federation
+      description: A RabbitMQ federation upstream
+    - kind: OperatorPolicy
+      version: v1beta1
+      name: operatorpolicies.rabbitmq.com
+      displayName: Operator Policy
+      description: A RabbitMQ operator policy
+    - kind: Permission
+      version: v1beta1
+      name: permissions.rabbitmq.com
+      displayName: Permission
+      description: Permissions of a RabbitMQ user on a vhost
+    - kind: Policy
+      version: v1beta1
+      name: policies.rabbitmq.com
+      displayName: Policy
+      description: A RabbitMQ policy
+    - kind: Queue
+      version: v1beta1
+      name: queues.rabbitmq.com
+      displayName: Queue
+      description: A RabbitMQ queue
+    - kind: SchemaReplication
+      version: v1beta1
+      name: schemareplications.rabbitmq.com
+      displayName: Schema Replication
+      description: Schema replication between RabbitMQ clusters
+    - kind: Shovel
+      version: v1beta1
+      name: shovels.rabbitmq.com
+      displayName: Shovel
+      description: A RabbitMQ shovel
+    - kind: SuperStream
+      version: v1alpha1
+      name: superstreams.rabbitmq.com
+      displayName: Super Stream
+      description: A RabbitMQ super stream
+    - kind: TopicPermission
+      version: v1beta1
+      name: topicpermissions.rabbitmq.com
+      displayName: Topic Permission
+      description: Topic permissions of a RabbitMQ user
+    - kind: User
+      version: v1beta1
+      name: users.rabbitmq.com
+      displayName: User
+      description: A RabbitMQ user
+    - kind: Vhost
+      version: v1beta1
+      name: vhosts.rabbitmq.com
+      displayName: Vhost
+      description: A RabbitMQ virtual host
+  artifacthub.io/links: |-
+    - name: App Source
+      url: https://github.com/rabbitmq/messaging-topology-operator
+    - name: Chart Source
+      url: https://github.com/alexmorbo/helm-charts/tree/master/charts/rabbitmq-messaging-topology-operator

@@ -1,0 +1,28 @@
+{{ .Chart.Name }} {{ .Chart.AppVersion }} installed into namespace {{ .Release.Namespace }}.
+
+{{ if .Values.crds.install -}}
+Thirteen topology CRDs are managed by this release and survive `helm uninstall`.
+{{- else -}}
+CRD installation is disabled. Make sure the rabbitmq.com topology CRDs exist,
+otherwise the operator will not start reconciling.
+{{- end }}
+
+This operator only manages objects inside RabbitMQ. The clusters themselves
+come from rabbitmq-cluster-operator, which has to be installed as well.
+
+{{ if and .Values.metrics.enabled .Values.metrics.secure -}}
+Metrics are served over HTTPS with client authentication. Whoever scrapes them
+needs the {{ include "rabbitmq-messaging-topology-operator.fullname" . }}-metrics-reader
+ClusterRole bound to its ServiceAccount.
+{{- end }}
+
+Declare a vhost, a user and its permissions:
+
+  apiVersion: rabbitmq.com/v1beta1
+  kind: Vhost
+  metadata:
+    name: example
+  spec:
+    name: example
+    rabbitmqClusterReference:
+      name: my-cluster

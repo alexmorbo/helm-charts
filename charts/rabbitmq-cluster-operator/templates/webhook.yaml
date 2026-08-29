@@ -1,0 +1,56 @@
+{{- if .Values.webhook.enabled }}
+{{- $svc := include "rabbitmq-cluster-operator.webhookServiceName" . }}
+{{- $ns := .Release.Namespace }}
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  # Prefixed with the release name, unlike upstream's fixed
+  # cluster-operator-mutating-webhook-configuration: these objects are cluster
+  # scoped, so a second release would silently fight over the same name.
+  name: {{ include "rabbitmq-cluster-operator.fullname" . }}-mutating
+  labels: {{- include "rabbitmq-cluster-operator.labels" . | nindent 4 }}
+  {{- if .Values.webhook.certificate.enabled }}
+  annotations:
+    cert-manager.io/inject-ca-from: {{ printf "%s/%s" $ns (include "rabbitmq-cluster-operator.webhookCertName" .) }}
+  {{- end }}
+webhooks:
+  - name: mrabbitmqcluster-v1beta1.kb.io
+    admissionReviewVersions: [v1]
+    sideEffects: None
+    failurePolicy: {{ .Values.webhook.failurePolicy }}
+    clientConfig:
+      service:
+        name: {{ $svc }}
+        namespace: {{ $ns }}
+        path: /mutate-rabbitmq-com-v1beta1-rabbitmqcluster
+    rules:
+      - apiGroups: [rabbitmq.com]
+        apiVersions: [v1beta1]
+        operations: [CREATE, UPDATE]
+        resources: [rabbitmqclusters]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: {{ include "rabbitmq-cluster-operator.fullname" . }}-validating
+  labels: {{- include "rabbitmq-cluster-operator.labels" . | nindent 4 }}
+  {{- if .Values.webhook.certificate.enabled }}
+  annotations:
+    cert-manager.io/inject-ca-from: {{ printf "%s/%s" $ns (include "rabbitmq-cluster-operator.webhookCertName" .) }}
+  {{- end }}
+webhooks:
+  - name: vrabbitmqcluster-v1beta1.kb.io
+    admissionReviewVersions: [v1]
+    sideEffects: None
+    failurePolicy: {{ .Values.webhook.failurePolicy }}
+    clientConfig:
+      service:
+        name: {{ $svc }}
+        namespace: {{ $ns }}
+        path: /validate-rabbitmq-com-v1beta1-rabbitmqcluster
+    rules:
+      - apiGroups: [rabbitmq.com]
+        apiVersions: [v1beta1]
+        operations: [CREATE, UPDATE]
+        resources: [rabbitmqclusters]
+{{- end }}

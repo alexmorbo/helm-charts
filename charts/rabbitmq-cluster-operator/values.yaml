@@ -1,0 +1,123 @@
+# -- Number of operator replicas. The operator elects a leader, so extra
+# replicas only shorten failover; they do not process in parallel.
+replicaCount: 1
+
+image:
+  # -- Image registry. Upstream publishes the same image to quay.io and ghcr.io.
+  registry: quay.io
+  repository: rabbitmqoperator/cluster-operator
+  pullPolicy: IfNotPresent
+  # -- Image tag. Defaults to the chart appVersion.
+  tag: ""
+
+imagePullSecrets: []
+
+nameOverride: ""
+fullnameOverride: ""
+
+crds:
+  # -- Install the RabbitmqCluster CustomResourceDefinition.
+  # Rendered as a regular template rather than placed in the chart's crds/
+  # directory: Helm installs that directory once and never upgrades it, which
+  # is why upstream asks you to run `kubectl apply --server-side` on every
+  # release. Kept on uninstall via helm.sh/resource-policy.
+  install: true
+
+rabbitmq:
+  # -- Image the operator gives to RabbitmqCluster objects that do not set
+  # spec.image. Empty leaves the operator's compiled-in default, which points
+  # at Docker Hub.
+  defaultImage: ""
+  # -- Comma separated imagePullSecrets applied to RabbitmqCluster objects
+  # that do not set their own.
+  defaultImagePullSecrets: ""
+
+serviceAccount:
+  # -- Create the operator ServiceAccount.
+  create: true
+  annotations: {}
+  # -- Name to use. Generated from the fullname template when empty.
+  name: ""
+
+rbac:
+  # -- Create ClusterRole, Role and their bindings.
+  create: true
+  # -- Create the ClusterRole carrying the servicebinding.io/controller label.
+  # Only useful with the Service Binding specification installed.
+  serviceBinding: true
+
+webhook:
+  # -- Admission webhooks validating and defaulting RabbitmqCluster objects.
+  # Their rules are scoped to the rabbitmq.com group, so a stopped operator
+  # blocks changes to RabbitMQ objects only.
+  enabled: true
+  # -- failurePolicy for both webhook configurations.
+  failurePolicy: Fail
+  certificate:
+    # -- Issue the webhook certificate with cert-manager. Required while
+    # webhook.enabled is true; the operator has no other way to get one.
+    enabled: true
+    # -- Issuer to sign with. Empty creates a self-signed Issuer in the
+    # release namespace, matching upstream.
+    issuerRef: {}
+    #  kind: ClusterIssuer
+    #  name: my-cluster-issuer
+    # -- Certificate duration and renewal window, left to cert-manager defaults
+    # when empty.
+    duration: ""
+    renewBefore: ""
+
+metrics:
+  # -- Create the Service exposing operator metrics on port 8080.
+  enabled: true
+
+monitoring:
+  # -- Scrape the operator metrics. Requires metrics.enabled.
+  enabled: false
+  # -- ServiceMonitor for prometheus-operator, VMServiceScrape for the
+  # VictoriaMetrics operator.
+  type: ServiceMonitor
+  path: /metrics
+  interval: 30s
+  scrapeTimeout: 10s
+  labels: {}
+  namespace: ""
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 500Mi
+  requests:
+    cpu: 200m
+    memory: 500Mi
+
+# -- Extra arguments for the operator binary.
+extraArgs: []
+
+# -- Extra environment variables for the operator container.
+extraEnv: []
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+topologySpreadConstraints: []
+priorityClassName: ""
+
+terminationGracePeriodSeconds: 10

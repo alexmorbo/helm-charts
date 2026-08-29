@@ -1,0 +1,24 @@
+{{ template "chart.header" . }}
+
+{{ template "chart.deprecationWarning" . }}
+
+{{ template "chart.badgesSection" . }}
+
+{{ template "chart.description" . }}
+
+{{ template "extra.artifacthub" . }}
+
+{{ template "chart.homepageLine" . }}
+
+{{ template "chart.maintainersSection" . }}
+
+{{ template "chart.sourcesSection" . }}
+
+{{ template "chart.requirementsSection" . }}
+
+## Install
+```console
+helm install {{ template "chart.name" . }} oci://ghcr.io/alexmorbo/helm-charts/{{ template "chart.name" . }}
+```
+
+{{ template "chart.valuesSection" . }}

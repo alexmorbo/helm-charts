@@ -1,0 +1,24 @@
+{{ .Chart.Name }} {{ .Chart.AppVersion }} installed into namespace {{ .Release.Namespace }}.
+
+{{ if .Values.crds.install -}}
+The RabbitmqCluster CRD is managed by this release and survives `helm uninstall`.
+{{- else -}}
+CRD installation is disabled. Make sure rabbitmqclusters.rabbitmq.com exists,
+otherwise the operator will not start reconciling.
+{{- end }}
+
+{{ if and .Values.webhook.enabled (not .Values.webhook.certificate.enabled) -}}
+WARNING: admission webhooks are enabled but certificate creation is off.
+Provide a secret named {{ include "rabbitmq-cluster-operator.webhookCertName" . }}
+with tls.crt and tls.key, and inject the CA bundle into the webhook
+configurations yourself. Until then every RabbitmqCluster change is rejected.
+{{- end }}
+
+Create a cluster:
+
+  apiVersion: rabbitmq.com/v1beta1
+  kind: RabbitmqCluster
+  metadata:
+    name: example
+  spec:
+    replicas: 1

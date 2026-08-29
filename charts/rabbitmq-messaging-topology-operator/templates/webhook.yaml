@@ -1,0 +1,73 @@
+{{- if .Values.webhook.enabled }}
+{{- $svc := include "rabbitmq-messaging-topology-operator.webhookServiceName" . }}
+{{- $ns := .Release.Namespace }}
+{{- $fp := .Values.webhook.failurePolicy }}
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  # Prefixed with the release name, unlike upstream's fixed
+  # messaging-topology-mutating-webhook-configuration: these objects are
+  # cluster scoped, so a second release would fight over the same name.
+  name: {{ include "rabbitmq-messaging-topology-operator.fullname" . }}-mutating
+  labels: {{- include "rabbitmq-messaging-topology-operator.labels" . | nindent 4 }}
+  {{- if .Values.webhook.certificate.enabled }}
+  annotations:
+    cert-manager.io/inject-ca-from: {{ printf "%s/%s" $ns (include "rabbitmq-messaging-topology-operator.webhookCertName" .) }}
+  {{- end }}
+webhooks:
+  - name: mqueue.kb.io
+    admissionReviewVersions: [v1]
+    sideEffects: None
+    failurePolicy: {{ $fp }}
+    clientConfig:
+      service:
+        name: {{ $svc }}
+        namespace: {{ $ns }}
+        path: /mutate-rabbitmq-com-v1beta1-queue
+    rules:
+      - apiGroups: [rabbitmq.com]
+        apiVersions: [v1beta1]
+        operations: [CREATE]
+        resources: [queues]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: {{ include "rabbitmq-messaging-topology-operator.fullname" . }}-validating
+  labels: {{- include "rabbitmq-messaging-topology-operator.labels" . | nindent 4 }}
+  {{- if .Values.webhook.certificate.enabled }}
+  annotations:
+    cert-manager.io/inject-ca-from: {{ printf "%s/%s" $ns (include "rabbitmq-messaging-topology-operator.webhookCertName" .) }}
+  {{- end }}
+webhooks:
+{{- range $w := list
+  (dict "name" "vbinding-v1beta1.kb.io"         "resource" "bindings"           "version" "v1beta1"  "path" "binding")
+  (dict "name" "vexchange.kb.io"                "resource" "exchanges"          "version" "v1beta1"  "path" "exchange")
+  (dict "name" "vfederation.kb.io"              "resource" "federations"        "version" "v1beta1"  "path" "federation")
+  (dict "name" "voperatorpolicy-v1beta1.kb.io"  "resource" "operatorpolicies"   "version" "v1beta1"  "path" "operatorpolicy")
+  (dict "name" "vpermission-v1beta1.kb.io"      "resource" "permissions"        "version" "v1beta1"  "path" "permission")
+  (dict "name" "vpolicy.kb.io"                  "resource" "policies"           "version" "v1beta1"  "path" "policy")
+  (dict "name" "vqueue.kb.io"                   "resource" "queues"             "version" "v1beta1"  "path" "queue")
+  (dict "name" "vschemareplication-v1beta1.kb.io" "resource" "schemareplications" "version" "v1beta1" "path" "schemareplication")
+  (dict "name" "vshovel-v1beta1.kb.io"          "resource" "shovels"            "version" "v1beta1"  "path" "shovel")
+  (dict "name" "vsuperstream-v1alpha1.kb.io"    "resource" "superstreams"       "version" "v1alpha1" "path" "superstream")
+  (dict "name" "vtopicpermission-v1beta1.kb.io" "resource" "topicpermissions"   "version" "v1beta1"  "path" "topicpermission")
+  (dict "name" "vuser.kb.io"                    "resource" "users"              "version" "v1beta1"  "path" "user")
+  (dict "name" "vvhost.kb.io"                   "resource" "vhosts"             "version" "v1beta1"  "path" "vhost")
+}}
+  - name: {{ $w.name }}
+    admissionReviewVersions: [v1]
+    sideEffects: None
+    failurePolicy: {{ $fp }}
+    clientConfig:
+      service:
+        name: {{ $svc }}
+        namespace: {{ $ns }}
+        path: {{ printf "/validate-rabbitmq-com-%s-%s" $w.version $w.path }}
+    rules:
+      - apiGroups: [rabbitmq.com]
+        apiVersions: [{{ $w.version }}]
+        operations: [CREATE, UPDATE]
+        resources: [{{ $w.resource }}]
+{{- end }}
+{{- end }}

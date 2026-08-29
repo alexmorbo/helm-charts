@@ -1,0 +1,32 @@
+apiVersion: v2
+kubeVersion: ">=1.23.0-0"
+name: rabbitmq-cluster-operator
+description: RabbitMQ Cluster Operator helm chart for Kubernetes
+type: application
+version: 1.0.0
+appVersion: "2.22.5"
+maintainers:
+  - name: AlexMorbo
+    email: alex@morbo.ru
+sources:
+  - https://github.com/alexmorbo/helm-charts/tree/master/charts/rabbitmq-cluster-operator
+icon: https://raw.githubusercontent.com/alexmorbo/helm-charts/refs/heads/master/docs/assets/logo.svg
+home: https://github.com/alexmorbo/helm-charts
+keywords:
+  - rabbitmq
+  - operator
+  - messaging
+annotations:
+  artifacthub.io/license: MIT
+  artifacthub.io/operator: "true"
+  artifacthub.io/crds: |-
+    - kind: RabbitmqCluster
+      version: v1beta1
+      name: rabbitmqclusters.rabbitmq.com
+      displayName: RabbitMQ Cluster
+      description: A RabbitMQ cluster managed by the operator
+  artifacthub.io/links: |-
+    - name: App Source
+      url: https://github.com/rabbitmq/cluster-operator
+    - name: Chart Source
+      url: https://github.com/alexmorbo/helm-charts/tree/master/charts/rabbitmq-cluster-operator

@@ -1,0 +1,125 @@
+{{- if .Values.rbac.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "rabbitmq-messaging-topology-operator.fullname" . }}-leader-election
+  namespace: {{ .Release.Namespace }}
+  labels: {{- include "rabbitmq-messaging-topology-operator.labels" . | nindent 4 }}
+rules:
+  - apiGroups: [""]
+    resources: [configmaps]
+    verbs: [get, list, watch, create, update, patch, delete]
+  - apiGroups: [coordination.k8s.io]
+    resources: [leases]
+    verbs: [get, list, watch, create, update, patch, delete]
+  - apiGroups: [""]
+    resources: [events]
+    verbs: [create, patch]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "rabbitmq-messaging-topology-operator.fullname" . }}-leader-election
+  namespace: {{ .Release.Namespace }}
+  labels: {{- include "rabbitmq-messaging-topology-operator.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "rabbitmq-messaging-topology-operator.fullname" . }}-leader-election
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "rabbitmq-messaging-topology-operator.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+---
+{{- $topology := list "bindings" "exchanges" "federations" "operatorpolicies" "permissions" "policies" "queues" "schemareplications" "shovels" "superstreams" "topicpermissions" "users" "vhosts" }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "rabbitmq-messaging-topology-operator.fullname" . }}
+  labels: {{- include "rabbitmq-messaging-topology-operator.labels" . | nindent 4 }}
+rules:
+  - apiGroups: [""]
+    resources: [secrets]
+    verbs: [create, get, list, update, watch]
+  - apiGroups: [""]
+    resources: [services]
+    verbs: [get, list, watch]
+  - apiGroups: [events.k8s.io]
+    resources: [events]
+    verbs: [create, patch]
+  - apiGroups: [rabbitmq.com]
+    resources: {{ toYaml $topology | nindent 6 }}
+    verbs: [create, delete, get, list, patch, update, watch]
+  - apiGroups: [rabbitmq.com]
+    resources: {{- range $topology }}
+      - {{ . }}/finalizers
+    {{- end }}
+    verbs: [update]
+  - apiGroups: [rabbitmq.com]
+    resources: {{- range $topology }}
+      - {{ . }}/status
+    {{- end }}
+    verbs: [get, patch, update]
+  - apiGroups: [rabbitmq.com]
+    resources: [rabbitmqclusters]
+    verbs: [get, list, watch]
+  - apiGroups: [rabbitmq.com]
+    resources: [rabbitmqclusters/status]
+    verbs: [get]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "rabbitmq-messaging-topology-operator.fullname" . }}
+  labels: {{- include "rabbitmq-messaging-topology-operator.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "rabbitmq-messaging-topology-operator.fullname" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "rabbitmq-messaging-topology-operator.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+{{- if and .Values.metrics.enabled .Values.metrics.secure }}
+---
+# The secured metrics endpoint checks the caller's token, so the operator needs
+# to be allowed to create TokenReview and SubjectAccessReview.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "rabbitmq-messaging-topology-operator.fullname" . }}-metrics-auth
+  labels: {{- include "rabbitmq-messaging-topology-operator.labels" . | nindent 4 }}
+rules:
+  - apiGroups: [authentication.k8s.io]
+    resources: [tokenreviews]
+    verbs: [create]
+  - apiGroups: [authorization.k8s.io]
+    resources: [subjectaccessreviews]
+    verbs: [create]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "rabbitmq-messaging-topology-operator.fullname" . }}-metrics-auth
+  labels: {{- include "rabbitmq-messaging-topology-operator.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "rabbitmq-messaging-topology-operator.fullname" . }}-metrics-auth
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "rabbitmq-messaging-topology-operator.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+---
+# Grants /metrics to whoever gets bound to it; the scraper's ServiceAccount
+# needs this ClusterRole to read the secured endpoint.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "rabbitmq-messaging-topology-operator.fullname" . }}-metrics-reader
+  labels: {{- include "rabbitmq-messaging-topology-operator.labels" . | nindent 4 }}
+rules:
+  - nonResourceURLs: ["/metrics"]
+    verbs: [get]
+{{- end }}
+{{- end }}

@@ -1,0 +1,33 @@
+{{- if and .Values.monitoring.enabled .Values.metrics.enabled }}
+apiVersion: {{ eq .Values.monitoring.type "VMServiceScrape" | ternary "operator.victoriametrics.com/v1beta1" "monitoring.coreos.com/v1" }}
+kind: {{ .Values.monitoring.type }}
+metadata:
+  name: {{ include "rabbitmq-messaging-topology-operator.fullname" . }}
+  namespace: {{ .Values.monitoring.namespace | default .Release.Namespace }}
+  labels:
+    {{- include "rabbitmq-messaging-topology-operator.labels" . | nindent 4 }}
+    {{- with .Values.monitoring.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels: {{- include "rabbitmq-messaging-topology-operator.selectorLabels" . | nindent 6 }}
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  endpoints:
+    - port: {{ .Values.metrics.secure | ternary "https" "http" }}
+      path: {{ .Values.monitoring.path }}
+      interval: {{ .Values.monitoring.interval }}
+      scrapeTimeout: {{ .Values.monitoring.scrapeTimeout }}
+      {{- if .Values.metrics.secure }}
+      # The endpoint authenticates the caller, so the scraper sends its own
+      # ServiceAccount token. That account still needs the metrics-reader
+      # ClusterRole bound to it.
+      scheme: https
+      bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+      {{- with .Values.monitoring.tlsConfig }}
+      tlsConfig: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- end }}
+{{- end }}

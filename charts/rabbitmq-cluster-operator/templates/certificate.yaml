@@ -1,0 +1,37 @@
+{{- if and .Values.webhook.enabled .Values.webhook.certificate.enabled }}
+{{- if not .Values.webhook.certificate.issuerRef }}
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ include "rabbitmq-cluster-operator.fullname" . }}-selfsigned
+  namespace: {{ .Release.Namespace }}
+  labels: {{- include "rabbitmq-cluster-operator.labels" . | nindent 4 }}
+spec:
+  selfSigned: {}
+---
+{{- end }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "rabbitmq-cluster-operator.webhookCertName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels: {{- include "rabbitmq-cluster-operator.labels" . | nindent 4 }}
+spec:
+  secretName: {{ include "rabbitmq-cluster-operator.webhookCertName" . }}
+  dnsNames:
+    - {{ printf "%s.%s.svc" (include "rabbitmq-cluster-operator.webhookServiceName" .) .Release.Namespace }}
+    - {{ printf "%s.%s.svc.cluster.local" (include "rabbitmq-cluster-operator.webhookServiceName" .) .Release.Namespace }}
+  {{- with .Values.webhook.certificate.duration }}
+  duration: {{ . }}
+  {{- end }}
+  {{- with .Values.webhook.certificate.renewBefore }}
+  renewBefore: {{ . }}
+  {{- end }}
+  issuerRef:
+    {{- if .Values.webhook.certificate.issuerRef }}
+    {{- toYaml .Values.webhook.certificate.issuerRef | nindent 4 }}
+    {{- else }}
+    kind: Issuer
+    name: {{ include "rabbitmq-cluster-operator.fullname" . }}-selfsigned
+    {{- end }}
+{{- end }}
