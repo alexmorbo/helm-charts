@@ -1,4 +1,6 @@
 {{- if .Values.gotenberg.enabled }}
+{{- $gotenbergTag := .Values.gotenberg.image.tag | toString | trimPrefix "v" }}
+{{- $gotenbergTagIsSemver := regexMatch "^[0-9]+\\.[0-9]+\\.[0-9]+(-.*)?(\\+.*)?$" $gotenbergTag }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -30,6 +32,25 @@ spec:
         - name: gotenberg
           image: {{ include "paperless-ngx.imageRegistry" (dict "local" .Values.gotenberg.image.registry "global" .Values.global.imageRegistry "default" "docker.io") }}/{{ .Values.gotenberg.image.repository }}:{{ .Values.gotenberg.image.tag }}
           imagePullPolicy: {{ .Values.gotenberg.image.pullPolicy }}
+          {{- if or .Values.gotenberg.suppressProbeMetricLogs .Values.gotenberg.extraEnv }}
+          env:
+            {{- if .Values.gotenberg.suppressProbeMetricLogs }}
+            {{- if and $gotenbergTagIsSemver (semverCompare ">=8.29.0-0" $gotenbergTag) }}
+            - name: API_DISABLE_HEALTH_CHECK_ROUTE_TELEMETRY
+              value: "true"
+            - name: PROMETHEUS_DISABLE_ROUTE_TELEMETRY
+              value: "true"
+            {{- else }}
+            - name: API_DISABLE_HEALTH_CHECK_LOGGING
+              value: "true"
+            - name: PROMETHEUS_DISABLE_ROUTE_LOGGING
+              value: "true"
+            {{- end }}
+            {{- end }}
+            {{- with .Values.gotenberg.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- end }}
           ports:
             - name: http
               containerPort: {{ .Values.gotenberg.port }}
