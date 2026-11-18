@@ -201,6 +201,9 @@ app:
       download:
         slots: 500
         speed_limit: 1000
+        destination:
+          permissions:
+            mode: "644"
 
     retention:
       transfers:
@@ -209,7 +212,3 @@ app:
         download:
           succeeded: 1440
       search: 1440
-
-    permissions:
-      file:
-        mode: "644"
